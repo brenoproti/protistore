@@ -1,0 +1,24 @@
+# Environment variables
+.env
+.env.local
+.env.production
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.sw?
+
+# Node
+node_modules
+
+# Go
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# Docker volumes
+mysql_data
