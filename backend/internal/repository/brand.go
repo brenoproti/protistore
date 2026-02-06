@@ -37,6 +37,23 @@ func (r *BrandRepository) FindActiveByStoreID(ctx context.Context, storeID uint6
 	return scanBrands(rows)
 }
 
+func (r *BrandRepository) FindByName(ctx context.Context, storeID uint64, name string) (*model.Brand, error) {
+	var b model.Brand
+	var logo sql.NullString
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, store_id, name, slug, logo_url, is_active, created_at, updated_at
+		FROM brands WHERE store_id = ? AND LOWER(name) = LOWER(?) LIMIT 1`, storeID, name,
+	).Scan(&b.ID, &b.StoreID, &b.Name, &b.Slug, &logo, &b.IsActive, &b.CreatedAt, &b.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	b.LogoURL = model.NullStringToPtr(logo)
+	return &b, nil
+}
+
 func (r *BrandRepository) FindByID(ctx context.Context, id, storeID uint64) (*model.Brand, error) {
 	var b model.Brand
 	var logo sql.NullString

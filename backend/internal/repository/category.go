@@ -37,6 +37,26 @@ func (r *CategoryRepository) FindActiveByStoreID(ctx context.Context, storeID ui
 	return scanCategories(rows)
 }
 
+func (r *CategoryRepository) FindByName(ctx context.Context, storeID uint64, name string) (*model.Category, error) {
+	var c model.Category
+	var parentID sql.NullInt64
+	var desc, img sql.NullString
+	err := r.db.QueryRowContext(ctx,
+		`SELECT id, store_id, parent_id, name, slug, description, image_url, sort_order, is_active, created_at, updated_at
+		FROM categories WHERE store_id = ? AND LOWER(name) = LOWER(?) LIMIT 1`, storeID, name,
+	).Scan(&c.ID, &c.StoreID, &parentID, &c.Name, &c.Slug, &desc, &img, &c.SortOrder, &c.IsActive, &c.CreatedAt, &c.UpdatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	c.ParentID = model.NullInt64ToUint64Ptr(parentID)
+	c.Description = model.NullStringToPtr(desc)
+	c.ImageURL = model.NullStringToPtr(img)
+	return &c, nil
+}
+
 func (r *CategoryRepository) FindByID(ctx context.Context, id, storeID uint64) (*model.Category, error) {
 	var c model.Category
 	var parentID sql.NullInt64

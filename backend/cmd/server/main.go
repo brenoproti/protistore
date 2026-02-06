@@ -63,6 +63,7 @@ func main() {
 	bannerHandler := handler.NewBannerHandler(bannerRepo)
 	orderHandler := handler.NewOrderHandler(orderRepo, productRepo)
 	dashboardHandler := handler.NewDashboardHandler(orderRepo, productRepo)
+	importHandler := handler.NewImportHandler(productRepo, categoryRepo, brandRepo)
 	uploadHandler := handler.NewUploadHandler(cfg.UploadDir)
 
 	// S3 presign handler (only if S3 is configured)
@@ -146,6 +147,8 @@ func main() {
 			r.Delete("/brands/{id}", brandHandler.Delete)
 
 			r.Get("/products", productHandler.List)
+			r.Post("/products/import", importHandler.Import)
+			r.Get("/products/export", importHandler.Export)
 			r.Get("/products/{id}", productHandler.Get)
 			r.Post("/products", productHandler.Create)
 			r.Put("/products/{id}", productHandler.Update)

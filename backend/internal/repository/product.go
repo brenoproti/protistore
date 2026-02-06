@@ -110,6 +110,19 @@ func (r *ProductRepository) FindByStoreID(ctx context.Context, storeID uint64, p
 	return products, total, nil
 }
 
+func (r *ProductRepository) FindAllByStoreID(ctx context.Context, storeID uint64) ([]model.Product, error) {
+	rows, err := r.db.QueryContext(ctx,
+		`SELECT p.id, p.store_id, p.category_id, p.brand_id, p.name, p.slug, p.description,
+		p.price, p.compare_at_price, p.cost_price, p.sku, p.stock, p.is_active, p.is_featured,
+		p.created_at, p.updated_at
+		FROM products p WHERE p.store_id = ? ORDER BY p.id`, storeID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	return scanProducts(rows)
+}
+
 func (r *ProductRepository) FindByID(ctx context.Context, id, storeID uint64) (*model.Product, error) {
 	var p model.Product
 	var catID, brandID sql.NullInt64

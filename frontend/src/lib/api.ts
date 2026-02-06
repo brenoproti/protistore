@@ -318,6 +318,12 @@ export const adminBrandApi = {
 // Admin API – Products CRUD
 // ===========================================================================
 
+export interface ImportResult {
+  total: number;
+  created: number;
+  errors: { row: number; message: string }[];
+}
+
 export const adminProductApi = {
   list(params?: Record<string, unknown>) {
     return api.get<PaginatedResponse<Product>>('/admin/products', { params }).then((r) => r.data);
@@ -337,6 +343,34 @@ export const adminProductApi = {
 
   delete(id: number) {
     return api.delete(`/admin/products/${id}`).then((r) => r.data);
+  },
+
+  importProducts(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api
+      .post<ImportResult>('/admin/products/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      .then((r) => r.data);
+  },
+
+  exportProducts(format: 'csv' | 'xlsx' = 'csv') {
+    return api
+      .get('/admin/products/export', {
+        params: { format },
+        responseType: 'blob',
+      })
+      .then((r) => {
+        const ext = format === 'xlsx' ? 'xlsx' : 'csv';
+        const blob = new Blob([r.data]);
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `produtos.${ext}`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      });
   },
 };
 
