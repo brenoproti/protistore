@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Menu, X, MessageCircle, Package } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, MessageCircle, Package, Settings, LayoutDashboard, Palette, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useStore } from '@/contexts/StoreContext';
@@ -24,6 +24,7 @@ export function StoreLayout() {
 
   const headerBg = customization?.header_bg_color || '#ffffff';
   const headerTextColor = isDark(headerBg) ? '#ffffff' : '#1f2937';
+  const isAdmin = !!localStorage.getItem('admin_access_token');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +36,31 @@ export function StoreLayout() {
 
   return (
     <div className="flex min-h-screen flex-col">
+      {/* Admin bar */}
+      {isAdmin && (
+        <div className="bg-gray-900 text-gray-300 text-xs z-50">
+          <div className="mx-auto max-w-7xl px-4 py-1.5 flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-white flex items-center gap-1">
+                <Settings size={11} /> Admin
+              </span>
+              <a href="/admin" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+                <LayoutDashboard size={11} /> Dashboard
+              </a>
+              <a href="/admin/products" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+                <ShoppingBag size={11} /> Produtos
+              </a>
+              <a href="/admin/customization" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors flex items-center gap-1">
+                <Palette size={11} /> Personalizar
+              </a>
+            </div>
+            <a href="/admin" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+              Painel completo →
+            </a>
+          </div>
+        </div>
+      )}
+
       <header
         className="sticky top-0 z-50 border-b shadow-sm"
         style={{ backgroundColor: headerBg, color: headerTextColor }}
