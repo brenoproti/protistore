@@ -32,7 +32,8 @@ export function CustomizationPage() {
   }, [customization]);
 
   const mutation = useMutation({
-    mutationFn: (data: Partial<StoreCustomization>) => adminStoreApi.updateCustomization(data),
+    mutationFn: (data: Partial<StoreCustomization>) =>
+      adminStoreApi.updateCustomization(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'customization'] });
       toast.success('Personalização atualizada');
@@ -45,7 +46,7 @@ export function CustomizationPage() {
     mutation.mutate(form);
   }
 
-  function updateField(key: string, value: string) {
+  function updateField(key: string, value: string | null) {
     setForm(prev => ({ ...prev, [key]: value }));
   }
 
@@ -57,30 +58,12 @@ export function CustomizationPage() {
     <div>
       <div className="mb-6 flex items-center gap-3">
         <Palette size={24} className="text-primary" />
-        <h1 className="text-2xl font-bold">Personalização da Loja</h1>
+        <h1 className="text-2xl font-bold">Personalização Visual</h1>
       </div>
 
       <form onSubmit={handleSubmit}>
         <div className="grid gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
-            {/* Store Name */}
-            <div className="rounded-lg border p-6">
-              <h2 className="mb-4 font-semibold">Informações da Loja</h2>
-              <div>
-                <label className="mb-1 block text-sm font-medium">Nome da Empresa / Loja</label>
-                <input
-                  type="text"
-                  value={(form.store_name as string) || ''}
-                  onChange={e => updateField('store_name', e.target.value)}
-                  className="input"
-                  placeholder="Ex: Minha Loja Virtual"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Exibido no rodapé da loja e nos direitos reservados.
-                </p>
-              </div>
-            </div>
-
             {/* Colors */}
             <div className="rounded-lg border p-6">
               <h2 className="mb-4 font-semibold">Cores</h2>

@@ -17,11 +17,11 @@ func NewStoreRepository(db *sql.DB) *StoreRepository {
 
 func (r *StoreRepository) FindBySlug(ctx context.Context, slug string) (*model.Store, error) {
 	var s model.Store
-	var desc, logo, favicon sql.NullString
+	var desc, logo, favicon, whatsapp sql.NullString
 	err := r.db.QueryRowContext(ctx,
-		"SELECT id, name, slug, description, logo_url, favicon_url, is_active, created_at, updated_at FROM stores WHERE slug = ?",
+		"SELECT id, name, slug, description, logo_url, favicon_url, whatsapp_number, is_active, created_at, updated_at FROM stores WHERE slug = ?",
 		slug,
-	).Scan(&s.ID, &s.Name, &s.Slug, &desc, &logo, &favicon, &s.IsActive, &s.CreatedAt, &s.UpdatedAt)
+	).Scan(&s.ID, &s.Name, &s.Slug, &desc, &logo, &favicon, &whatsapp, &s.IsActive, &s.CreatedAt, &s.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -31,16 +31,17 @@ func (r *StoreRepository) FindBySlug(ctx context.Context, slug string) (*model.S
 	s.Description = model.NullStringToPtr(desc)
 	s.LogoURL = model.NullStringToPtr(logo)
 	s.FaviconURL = model.NullStringToPtr(favicon)
+	s.WhatsappNumber = model.NullStringToPtr(whatsapp)
 	return &s, nil
 }
 
 func (r *StoreRepository) FindByID(ctx context.Context, id uint64) (*model.Store, error) {
 	var s model.Store
-	var desc, logo, favicon sql.NullString
+	var desc, logo, favicon, whatsapp sql.NullString
 	err := r.db.QueryRowContext(ctx,
-		"SELECT id, name, slug, description, logo_url, favicon_url, is_active, created_at, updated_at FROM stores WHERE id = ?",
+		"SELECT id, name, slug, description, logo_url, favicon_url, whatsapp_number, is_active, created_at, updated_at FROM stores WHERE id = ?",
 		id,
-	).Scan(&s.ID, &s.Name, &s.Slug, &desc, &logo, &favicon, &s.IsActive, &s.CreatedAt, &s.UpdatedAt)
+	).Scan(&s.ID, &s.Name, &s.Slug, &desc, &logo, &favicon, &whatsapp, &s.IsActive, &s.CreatedAt, &s.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -50,13 +51,38 @@ func (r *StoreRepository) FindByID(ctx context.Context, id uint64) (*model.Store
 	s.Description = model.NullStringToPtr(desc)
 	s.LogoURL = model.NullStringToPtr(logo)
 	s.FaviconURL = model.NullStringToPtr(favicon)
+	s.WhatsappNumber = model.NullStringToPtr(whatsapp)
 	return &s, nil
+}
+
+func (r *StoreRepository) ListActive(ctx context.Context) ([]model.Store, error) {
+	rows, err := r.db.QueryContext(ctx,
+		"SELECT id, name, slug, description, logo_url, favicon_url, whatsapp_number, is_active, created_at, updated_at FROM stores WHERE is_active = 1 ORDER BY name")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var stores []model.Store
+	for rows.Next() {
+		var s model.Store
+		var desc, logo, favicon, whatsapp sql.NullString
+		if err := rows.Scan(&s.ID, &s.Name, &s.Slug, &desc, &logo, &favicon, &whatsapp, &s.IsActive, &s.CreatedAt, &s.UpdatedAt); err != nil {
+			return nil, err
+		}
+		s.Description = model.NullStringToPtr(desc)
+		s.LogoURL = model.NullStringToPtr(logo)
+		s.FaviconURL = model.NullStringToPtr(favicon)
+		s.WhatsappNumber = model.NullStringToPtr(whatsapp)
+		stores = append(stores, s)
+	}
+	return stores, rows.Err()
 }
 
 func (r *StoreRepository) Update(ctx context.Context, s *model.Store) error {
 	_, err := r.db.ExecContext(ctx,
-		"UPDATE stores SET name = ?, description = ?, logo_url = ?, favicon_url = ? WHERE id = ?",
-		s.Name, s.Description, s.LogoURL, s.FaviconURL, s.ID,
+		"UPDATE stores SET name = ?, description = ?, logo_url = ?, favicon_url = ?, whatsapp_number = ? WHERE id = ?",
+		s.Name, s.Description, s.LogoURL, s.FaviconURL, s.WhatsappNumber, s.ID,
 	)
 	return err
 }

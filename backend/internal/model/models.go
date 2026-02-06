@@ -6,30 +6,31 @@ import (
 )
 
 type Store struct {
-	ID          uint64    `json:"id"`
-	Name        string    `json:"name"`
-	Slug        string    `json:"slug"`
-	Description *string   `json:"description"`
-	LogoURL     *string   `json:"logo_url"`
-	FaviconURL  *string   `json:"favicon_url"`
-	IsActive    bool      `json:"is_active"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	ID             uint64    `json:"id"`
+	Name           string    `json:"name"`
+	Slug           string    `json:"slug"`
+	Description    *string   `json:"description"`
+	LogoURL        *string   `json:"logo_url"`
+	FaviconURL     *string   `json:"favicon_url"`
+	WhatsappNumber *string   `json:"whatsapp_number"`
+	IsActive       bool      `json:"is_active"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type StoreCustomization struct {
-	ID              uint64  `json:"id"`
-	StoreID         uint64  `json:"store_id"`
-	PrimaryColor    string  `json:"primary_color"`
-	SecondaryColor  string  `json:"secondary_color"`
-	AccentColor     string  `json:"accent_color"`
-	BackgroundColor string  `json:"background_color"`
-	TextColor       string  `json:"text_color"`
-	HeaderBgColor   string  `json:"header_bg_color"`
-	FooterBgColor   string  `json:"footer_bg_color"`
-	FontFamily      string  `json:"font_family"`
-	BorderRadius    string  `json:"border_radius"`
-	CustomCSS       *string `json:"custom_css"`
+	ID              uint64    `json:"id"`
+	StoreID         uint64    `json:"store_id"`
+	PrimaryColor    string    `json:"primary_color"`
+	SecondaryColor  string    `json:"secondary_color"`
+	AccentColor     string    `json:"accent_color"`
+	BackgroundColor string    `json:"background_color"`
+	TextColor       string    `json:"text_color"`
+	HeaderBgColor   string    `json:"header_bg_color"`
+	FooterBgColor   string    `json:"footer_bg_color"`
+	FontFamily      string    `json:"font_family"`
+	BorderRadius    string    `json:"border_radius"`
+	CustomCSS       *string   `json:"custom_css"`
 	CreatedAt       time.Time `json:"created_at"`
 	UpdatedAt       time.Time `json:"updated_at"`
 }

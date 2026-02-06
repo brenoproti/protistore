@@ -69,6 +69,13 @@ func AuthMiddleware(jwtSecret string) func(http.Handler) http.Handler {
 			storeID := uint64(claims["store_id"].(float64))
 			email, _ := claims["email"].(string)
 
+			// Validate JWT store_id matches the tenant store from subdomain
+			tenantStoreID := GetStoreID(r.Context())
+			if tenantStoreID != 0 && storeID != tenantStoreID {
+				http.Error(w, `{"code":"UNAUTHORIZED","message":"Token does not match this store"}`, http.StatusUnauthorized)
+				return
+			}
+
 			ctx := context.WithValue(r.Context(), AdminIDKey, adminID)
 			ctx = context.WithValue(ctx, AdminStoreIDKey, storeID)
 			ctx = context.WithValue(ctx, AdminEmailKey, email)

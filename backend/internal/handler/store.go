@@ -16,6 +16,16 @@ func NewStoreHandler(storeRepo *repository.StoreRepository) *StoreHandler {
 	return &StoreHandler{storeRepo: storeRepo}
 }
 
+// GET /api/v1/stores - List all active stores (no tenant middleware)
+func (h *StoreHandler) ListStores(w http.ResponseWriter, r *http.Request) {
+	stores, err := h.storeRepo.ListActive(r.Context())
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to list stores")
+		return
+	}
+	writeJSON(w, http.StatusOK, stores)
+}
+
 // GET /api/v1/store/info - Public store info
 func (h *StoreHandler) GetStoreInfo(w http.ResponseWriter, r *http.Request) {
 	storeID := middleware.GetStoreID(r.Context())
@@ -65,6 +75,7 @@ func (h *StoreHandler) AdminUpdateStore(w http.ResponseWriter, r *http.Request) 
 	store.Description = req.Description
 	store.LogoURL = req.LogoURL
 	store.FaviconURL = req.FaviconURL
+	store.WhatsappNumber = req.WhatsappNumber
 
 	if err := h.storeRepo.Update(r.Context(), store); err != nil {
 		writeError(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Failed to update store")

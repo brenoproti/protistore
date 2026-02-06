@@ -5,6 +5,7 @@ export interface Store {
   description: string | null;
   logo_url: string | null;
   favicon_url: string | null;
+  whatsapp_number: string | null;
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -23,7 +24,6 @@ export interface StoreCustomization {
   font_family: string;
   border_radius: string;
   custom_css: string | null;
-  store_name: string | null;
 }
 
 export interface Category {

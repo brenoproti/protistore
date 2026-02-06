@@ -21,7 +21,7 @@ func NewAuthService(adminRepo *repository.AdminRepository, jwtSecret string) *Au
 	return &AuthService{adminRepo: adminRepo, jwtSecret: jwtSecret}
 }
 
-func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.LoginResponse, error) {
+func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest, storeID uint64) (*dto.LoginResponse, error) {
 	admin, err := s.adminRepo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		return nil, errors.New("internal error")
@@ -31,6 +31,11 @@ func (s *AuthService) Login(ctx context.Context, req dto.LoginRequest) (*dto.Log
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(req.Password)); err != nil {
+		return nil, errors.New("invalid credentials")
+	}
+
+	// Validate admin belongs to this store
+	if admin.StoreID != storeID {
 		return nil, errors.New("invalid credentials")
 	}
 

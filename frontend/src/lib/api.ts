@@ -18,16 +18,24 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
+ * Check whether the current hostname contains a store subdomain.
+ *
+ * A bare hostname like "localhost" or "example.com" means no store subdomain.
+ * A subdomain like "vibestore.localhost" or "myshop.example.com" means there is one.
+ */
+export function hasStoreSubdomain(): boolean {
+  const hostname = window.location.hostname;
+  const parts = hostname.split('.');
+  return parts.length > 1 && parts[0] !== 'www';
+}
+
+/**
  * Derive the store slug from the current hostname.
  *
- * Strategy:
- *  1. Split the hostname on ".".
- *  2. If there are multiple parts (e.g. "mystore.example.com"), take the first
- *     segment as the slug.
- *  3. If the hostname is bare (e.g. "localhost"), fall back to the value stored
- *     in localStorage under "store_slug".
+ * Returns the subdomain portion (e.g. "vibestore" from "vibestore.localhost"),
+ * or `null` when there is no subdomain.
  */
-function getStoreSlug(): string {
+function getStoreSlug(): string | null {
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
 
@@ -35,9 +43,7 @@ function getStoreSlug(): string {
     return parts[0];
   }
 
-  // Bare hostname (localhost, single-segment, or "www.…") – use localStorage fallback
-  // Default to 'vibestore' for local development
-  return localStorage.getItem('store_slug') || 'vibestore';
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -405,6 +411,17 @@ export const adminApi = {
         })
         .then((r) => r.data);
     }
+  },
+};
+
+// ===========================================================================
+// Platform API (no tenant required)
+// ===========================================================================
+
+export const platformApi = {
+  /** List all active stores on the platform. */
+  listStores() {
+    return axios.get<Store[]>('/api/v1/stores').then((r) => r.data);
   },
 };
 

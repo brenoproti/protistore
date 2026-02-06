@@ -33,10 +33,11 @@ type RefreshResponse struct {
 }
 
 type UpdateStoreRequest struct {
-	Name        string  `json:"name"`
-	Description *string `json:"description"`
-	LogoURL     *string `json:"logo_url"`
-	FaviconURL  *string `json:"favicon_url"`
+	Name           string  `json:"name"`
+	Description    *string `json:"description"`
+	LogoURL        *string `json:"logo_url"`
+	FaviconURL     *string `json:"favicon_url"`
+	WhatsappNumber *string `json:"whatsapp_number"`
 }
 
 type UpdateCustomizationRequest struct {

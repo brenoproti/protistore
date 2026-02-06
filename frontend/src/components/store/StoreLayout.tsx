@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Menu, X } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, MessageCircle, Package } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useStore } from '@/contexts/StoreContext';
@@ -35,7 +35,7 @@ export function StoreLayout() {
             </button>
             <Link to="/" className="flex items-center gap-2">
               {store?.logo_url ? (
-                <img src={store.logo_url} alt={store.name} className="h-8" />
+                <img src={store.logo_url} alt={store?.name || ''} className="h-8 w-auto object-contain" />
               ) : (
                 <span className="text-xl font-bold text-primary">{store?.name}</span>
               )}
@@ -109,7 +109,7 @@ export function StoreLayout() {
         <div className="mx-auto max-w-7xl px-4 py-8">
           <div className="grid gap-8 md:grid-cols-3">
             <div>
-              <h3 className="mb-3 text-lg font-semibold">{customization?.store_name || store?.name}</h3>
+              <h3 className="mb-3 text-lg font-semibold">{store?.name}</h3>
               {store?.description && (
                 <p className="text-sm opacity-75">{store.description}</p>
               )}
@@ -119,6 +119,9 @@ export function StoreLayout() {
               <div className="flex flex-col gap-1.5">
                 <Link to="/" className="text-sm opacity-75 hover:opacity-100 transition-opacity">Início</Link>
                 <Link to="/products" className="text-sm opacity-75 hover:opacity-100 transition-opacity">Produtos</Link>
+                <Link to="/rastreio" className="text-sm opacity-75 hover:opacity-100 transition-opacity flex items-center gap-1">
+                  <Package size={14} /> Rastrear Pedido
+                </Link>
               </div>
             </div>
             <div>
@@ -127,10 +130,22 @@ export function StoreLayout() {
             </div>
           </div>
           <div className="mt-8 border-t border-white/10 pt-6 text-center text-xs opacity-50">
-            &copy; {new Date().getFullYear()} {customization?.store_name || store?.name}. Todos os direitos reservados.
+            &copy; {new Date().getFullYear()} {store?.name}. Todos os direitos reservados.
           </div>
         </div>
       </footer>
+
+      {store?.whatsapp_number && (
+        <a
+          href={`https://wa.me/${store.whatsapp_number}?text=${encodeURIComponent('Olá! Vim pela loja online e gostaria de mais informações.')}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform hover:scale-110 active:scale-95"
+          aria-label="Fale conosco pelo WhatsApp"
+        >
+          <MessageCircle size={28} />
+        </a>
+      )}
     </div>
   );
 }

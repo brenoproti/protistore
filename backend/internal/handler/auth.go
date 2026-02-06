@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/vibestore/backend/internal/dto"
+	"github.com/vibestore/backend/internal/middleware"
 	"github.com/vibestore/backend/internal/service"
 )
 
@@ -26,7 +27,8 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := h.authService.Login(r.Context(), req)
+	storeID := middleware.GetStoreID(r.Context())
+	resp, err := h.authService.Login(r.Context(), req, storeID)
 	if err != nil {
 		writeError(w, http.StatusUnauthorized, "AUTH_ERROR", err.Error())
 		return

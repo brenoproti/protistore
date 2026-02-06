@@ -8,6 +8,7 @@ import {
   Image,
   ShoppingCart,
   Palette,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -23,6 +24,7 @@ const navItems = [
   { to: '/admin/brands', icon: Tag, label: 'Marcas', end: false },
   { to: '/admin/banners', icon: Image, label: 'Banners', end: false },
   { to: '/admin/orders', icon: ShoppingCart, label: 'Pedidos', end: false },
+  { to: '/admin/settings', icon: Settings, label: 'Configurações', end: false },
   { to: '/admin/customization', icon: Palette, label: 'Personalização', end: false },
 ] as const;
 

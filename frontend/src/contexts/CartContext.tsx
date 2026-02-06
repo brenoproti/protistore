@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { toast } from 'sonner';
 
 interface CartItem {
   product_id: number;
@@ -35,34 +36,45 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addItem = useCallback((item: Omit<CartItem, 'quantity'>, quantity = 1) => {
-    setItems(prev => {
-      const existing = prev.find(i => i.product_id === item.product_id);
-      if (existing) {
-        return prev.map(i =>
-          i.product_id === item.product_id
-            ? { ...i, quantity: Math.min(i.quantity + quantity, i.stock) }
-            : i
-        );
+    const existing = items.find(i => i.product_id === item.product_id);
+    if (existing) {
+      const newQty = Math.min(existing.quantity + quantity, item.stock);
+      if (newQty === existing.quantity) {
+        toast.info(`"${item.name}" já está no limite de estoque`);
+      } else {
+        toast.success(`"${item.name}" — quantidade atualizada para ${newQty}`);
       }
-      return [...prev, { ...item, quantity: Math.min(quantity, item.stock) }];
-    });
-  }, []);
+      setItems(prev => prev.map(i =>
+        i.product_id === item.product_id ? { ...i, quantity: newQty } : i
+      ));
+    } else {
+      toast.success(`"${item.name}" adicionado ao carrinho`);
+      setItems(prev => [...prev, { ...item, quantity: Math.min(quantity, item.stock) }]);
+    }
+  }, [items]);
 
   const removeItem = useCallback((productId: number) => {
+    const item = items.find(i => i.product_id === productId);
+    if (item) toast(`"${item.name}" removido do carrinho`);
     setItems(prev => prev.filter(i => i.product_id !== productId));
-  }, []);
+  }, [items]);
 
   const updateQuantity = useCallback((productId: number, quantity: number) => {
     if (quantity <= 0) {
+      const item = items.find(i => i.product_id === productId);
+      if (item) toast(`"${item.name}" removido do carrinho`);
       setItems(prev => prev.filter(i => i.product_id !== productId));
       return;
     }
     setItems(prev => prev.map(i =>
       i.product_id === productId ? { ...i, quantity: Math.min(quantity, i.stock) } : i
     ));
-  }, []);
+  }, [items]);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    if (items.length > 0) toast('Carrinho esvaziado');
+    setItems([]);
+  }, [items]);
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
 

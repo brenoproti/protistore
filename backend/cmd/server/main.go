@@ -96,8 +96,12 @@ func main() {
 	})
 
 	r.Route("/api/v1", func(r chi.Router) {
-		// Auth routes (no tenant middleware needed - uses email lookup)
+		// Platform-level routes (no tenant/auth middleware)
+		r.Get("/stores", storeHandler.ListStores)
+
+		// Auth routes (tenant middleware validates subdomain)
 		r.Route("/auth", func(r chi.Router) {
+			r.Use(middleware.TenantMiddleware(storeRepo))
 			r.Post("/login", authHandler.Login)
 			r.Post("/refresh", authHandler.Refresh)
 			r.Post("/logout", authHandler.Logout)
@@ -118,8 +122,9 @@ func main() {
 			r.Get("/orders", orderHandler.GetByOrderNumber)
 		})
 
-		// Admin routes (need auth middleware)
+		// Admin routes (tenant + auth middleware)
 		r.Route("/admin", func(r chi.Router) {
+			r.Use(middleware.TenantMiddleware(storeRepo))
 			r.Use(middleware.AuthMiddleware(cfg.JWTSecret))
 
 			r.Get("/store", storeHandler.AdminGetStore)
