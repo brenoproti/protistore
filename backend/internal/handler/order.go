@@ -83,10 +83,37 @@ func (h *OrderHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.CustomerName == "" || req.CustomerEmail == "" || req.ShippingAddress == "" ||
-		req.ShippingCity == "" || req.ShippingState == "" || req.ShippingZip == "" || len(req.Items) == 0 {
-		writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "All fields and items are required")
+	if req.CustomerName == "" || req.CustomerEmail == "" || len(req.Items) == 0 {
+		writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Name, email, and items are required")
 		return
+	}
+
+	// Validate delivery method
+	validDeliveryMethods := map[string]bool{"pickup": true, "delivery": true}
+	if req.DeliveryMethod == "" {
+		req.DeliveryMethod = "delivery"
+	}
+	if !validDeliveryMethods[req.DeliveryMethod] {
+		writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid delivery method")
+		return
+	}
+
+	// Validate payment method
+	validPaymentMethods := map[string]bool{"credit_card": true, "debit_card": true, "cash": true, "pix": true, "pay_on_pickup": true}
+	if req.DeliveryMethod == "pickup" {
+		req.PaymentMethod = "pay_on_pickup"
+	}
+	if !validPaymentMethods[req.PaymentMethod] {
+		writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid payment method")
+		return
+	}
+
+	// If delivery, require shipping address fields
+	if req.DeliveryMethod == "delivery" {
+		if req.ShippingAddress == "" || req.ShippingCity == "" || req.ShippingState == "" || req.ShippingZip == "" {
+			writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Shipping address is required for delivery")
+			return
+		}
 	}
 
 	// Build order items and calculate totals
@@ -125,6 +152,16 @@ func (h *OrderHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 
 	orderNumber := fmt.Sprintf("VS-%s-%s", time.Now().Format("20060102"), uuid.New().String()[:8])
 
+	// Validate change_for if cash payment
+	var changeFor *float64
+	if req.PaymentMethod == "cash" && req.ChangeFor != nil {
+		if *req.ChangeFor < subtotal {
+			writeError(w, http.StatusBadRequest, "VALIDATION_ERROR", "Change amount must be greater than or equal to order total")
+			return
+		}
+		changeFor = req.ChangeFor
+	}
+
 	order := &model.Order{
 		StoreID:         storeID,
 		OrderNumber:     orderNumber,
@@ -141,6 +178,9 @@ func (h *OrderHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 		Discount:        0,
 		Total:           subtotal,
 		Notes:           req.Notes,
+		DeliveryMethod:  req.DeliveryMethod,
+		PaymentMethod:   req.PaymentMethod,
+		ChangeFor:       changeFor,
 		Items:           orderItems,
 	}
 

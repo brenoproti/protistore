@@ -221,13 +221,35 @@ export function OrderTrackingPage() {
 
           {/* Delivery info */}
           <div className="rounded-lg border p-6">
-            <h2 className="font-semibold mb-3">Entregar em</h2>
-            <p className="text-sm font-medium">{order.customer_name}</p>
-            <p className="text-sm text-muted-foreground">
-              {order.shipping_address}<br />
-              {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+            <h2 className="font-semibold mb-3">Método de Entrega</h2>
+            <p className="text-sm font-medium">
+              {order.delivery_method === 'pickup' ? 'Retirada na Loja' : 'Entrega'}
             </p>
+            {order.delivery_method === 'delivery' && (
+              <div className="mt-2">
+                <p className="text-sm font-medium">{order.customer_name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {order.shipping_address}<br />
+                  {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+                </p>
+              </div>
+            )}
           </div>
+
+          {/* Payment info */}
+          {order.payment_method !== 'pay_on_pickup' && (
+            <div className="rounded-lg border p-6">
+              <h2 className="font-semibold mb-3">Forma de Pagamento</h2>
+              <p className="text-sm font-medium">
+                {{ credit_card: 'Cartão de Crédito', debit_card: 'Cartão de Débito', cash: 'Dinheiro', pix: 'PIX' }[order.payment_method] || order.payment_method}
+              </p>
+              {order.payment_method === 'cash' && order.change_for != null && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Troco para {formatCurrency(order.change_for)}
+                </p>
+              )}
+            </div>
+          )}
         </div>
       )}
     </div>

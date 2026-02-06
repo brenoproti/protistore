@@ -134,6 +134,9 @@ type CheckoutRequest struct {
 	ShippingState   string     `json:"shipping_state"`
 	ShippingZip     string     `json:"shipping_zip"`
 	Notes           *string    `json:"notes"`
+	DeliveryMethod  string     `json:"delivery_method"`
+	PaymentMethod   string     `json:"payment_method"`
+	ChangeFor       *float64   `json:"change_for"`
 	Items           []CartItem `json:"items"`
 }
 

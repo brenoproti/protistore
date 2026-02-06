@@ -133,6 +133,9 @@ type Order struct {
 	Discount        float64     `json:"discount"`
 	Total           float64     `json:"total"`
 	Notes           *string     `json:"notes"`
+	DeliveryMethod  string      `json:"delivery_method"`
+	PaymentMethod   string      `json:"payment_method"`
+	ChangeFor       *float64    `json:"change_for"`
 	CreatedAt       time.Time   `json:"created_at"`
 	UpdatedAt       time.Time   `json:"updated_at"`
 	Items           []OrderItem `json:"items,omitempty"`

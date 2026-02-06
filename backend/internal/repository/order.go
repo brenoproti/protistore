@@ -27,11 +27,13 @@ func (r *OrderRepository) Create(ctx context.Context, o *model.Order) error {
 
 	result, err := tx.ExecContext(ctx,
 		`INSERT INTO orders (store_id, order_number, status, customer_name, customer_email, customer_phone,
-		shipping_address, shipping_city, shipping_state, shipping_zip, subtotal, shipping_cost, discount, total, notes)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		shipping_address, shipping_city, shipping_state, shipping_zip, subtotal, shipping_cost, discount, total, notes,
+		delivery_method, payment_method, change_for)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		o.StoreID, o.OrderNumber, o.Status, o.CustomerName, o.CustomerEmail, o.CustomerPhone,
 		o.ShippingAddress, o.ShippingCity, o.ShippingState, o.ShippingZip,
-		o.Subtotal, o.ShippingCost, o.Discount, o.Total, o.Notes)
+		o.Subtotal, o.ShippingCost, o.Discount, o.Total, o.Notes,
+		o.DeliveryMethod, o.PaymentMethod, o.ChangeFor)
 	if err != nil {
 		return err
 	}
@@ -93,7 +95,9 @@ func (r *OrderRepository) FindByStoreID(ctx context.Context, storeID uint64, pag
 	query := fmt.Sprintf(
 		`SELECT o.id, o.store_id, o.order_number, o.status, o.customer_name, o.customer_email, o.customer_phone,
 		o.shipping_address, o.shipping_city, o.shipping_state, o.shipping_zip,
-		o.subtotal, o.shipping_cost, o.discount, o.total, o.notes, o.created_at, o.updated_at
+		o.subtotal, o.shipping_cost, o.discount, o.total, o.notes,
+		o.delivery_method, o.payment_method, o.change_for,
+		o.created_at, o.updated_at
 		FROM orders o WHERE %s ORDER BY o.created_at DESC LIMIT ? OFFSET ?`, whereClause)
 	args = append(args, perPage, offset)
 
@@ -114,14 +118,19 @@ func (r *OrderRepository) FindByStoreID(ctx context.Context, storeID uint64, pag
 func (r *OrderRepository) FindByID(ctx context.Context, id, storeID uint64) (*model.Order, error) {
 	var o model.Order
 	var phone, notes sql.NullString
+	var changeFor sql.NullFloat64
 	err := r.db.QueryRowContext(ctx,
 		`SELECT id, store_id, order_number, status, customer_name, customer_email, customer_phone,
 		shipping_address, shipping_city, shipping_state, shipping_zip,
-		subtotal, shipping_cost, discount, total, notes, created_at, updated_at
+		subtotal, shipping_cost, discount, total, notes,
+		delivery_method, payment_method, change_for,
+		created_at, updated_at
 		FROM orders WHERE id = ? AND store_id = ?`, id, storeID,
 	).Scan(&o.ID, &o.StoreID, &o.OrderNumber, &o.Status, &o.CustomerName, &o.CustomerEmail, &phone,
 		&o.ShippingAddress, &o.ShippingCity, &o.ShippingState, &o.ShippingZip,
-		&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes, &o.CreatedAt, &o.UpdatedAt)
+		&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes,
+		&o.DeliveryMethod, &o.PaymentMethod, &changeFor,
+		&o.CreatedAt, &o.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -130,6 +139,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, id, storeID uint64) (*mo
 	}
 	o.CustomerPhone = model.NullStringToPtr(phone)
 	o.Notes = model.NullStringToPtr(notes)
+	o.ChangeFor = model.NullFloat64ToPtr(changeFor)
 
 	items, err := r.FindItemsByOrderID(ctx, o.ID)
 	if err != nil {
@@ -143,14 +153,19 @@ func (r *OrderRepository) FindByID(ctx context.Context, id, storeID uint64) (*mo
 func (r *OrderRepository) FindByOrderNumber(ctx context.Context, orderNumber string, storeID uint64) (*model.Order, error) {
 	var o model.Order
 	var phone, notes sql.NullString
+	var changeFor sql.NullFloat64
 	err := r.db.QueryRowContext(ctx,
 		`SELECT id, store_id, order_number, status, customer_name, customer_email, customer_phone,
 		shipping_address, shipping_city, shipping_state, shipping_zip,
-		subtotal, shipping_cost, discount, total, notes, created_at, updated_at
+		subtotal, shipping_cost, discount, total, notes,
+		delivery_method, payment_method, change_for,
+		created_at, updated_at
 		FROM orders WHERE order_number = ? AND store_id = ?`, orderNumber, storeID,
 	).Scan(&o.ID, &o.StoreID, &o.OrderNumber, &o.Status, &o.CustomerName, &o.CustomerEmail, &phone,
 		&o.ShippingAddress, &o.ShippingCity, &o.ShippingState, &o.ShippingZip,
-		&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes, &o.CreatedAt, &o.UpdatedAt)
+		&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes,
+		&o.DeliveryMethod, &o.PaymentMethod, &changeFor,
+		&o.CreatedAt, &o.UpdatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -159,6 +174,7 @@ func (r *OrderRepository) FindByOrderNumber(ctx context.Context, orderNumber str
 	}
 	o.CustomerPhone = model.NullStringToPtr(phone)
 	o.Notes = model.NullStringToPtr(notes)
+	o.ChangeFor = model.NullFloat64ToPtr(changeFor)
 
 	items, err := r.FindItemsByOrderID(ctx, o.ID)
 	if err != nil {
@@ -333,13 +349,17 @@ func scanOrders(rows *sql.Rows) ([]model.Order, error) {
 	for rows.Next() {
 		var o model.Order
 		var phone, notes sql.NullString
+		var changeFor sql.NullFloat64
 		if err := rows.Scan(&o.ID, &o.StoreID, &o.OrderNumber, &o.Status, &o.CustomerName, &o.CustomerEmail, &phone,
 			&o.ShippingAddress, &o.ShippingCity, &o.ShippingState, &o.ShippingZip,
-			&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes, &o.CreatedAt, &o.UpdatedAt); err != nil {
+			&o.Subtotal, &o.ShippingCost, &o.Discount, &o.Total, &notes,
+			&o.DeliveryMethod, &o.PaymentMethod, &changeFor,
+			&o.CreatedAt, &o.UpdatedAt); err != nil {
 			return nil, err
 		}
 		o.CustomerPhone = model.NullStringToPtr(phone)
 		o.Notes = model.NullStringToPtr(notes)
+		o.ChangeFor = model.NullFloat64ToPtr(changeFor)
 		orders = append(orders, o)
 	}
 	return orders, rows.Err()

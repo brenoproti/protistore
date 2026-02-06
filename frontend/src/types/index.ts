@@ -117,6 +117,9 @@ export interface Order {
   discount: number;
   total: number;
   notes: string | null;
+  delivery_method: 'pickup' | 'delivery';
+  payment_method: 'credit_card' | 'debit_card' | 'cash' | 'pix' | 'pay_on_pickup';
+  change_for: number | null;
   items: OrderItem[];
   created_at: string;
   updated_at: string;

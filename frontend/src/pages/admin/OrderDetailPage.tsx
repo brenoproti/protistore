@@ -318,18 +318,42 @@ export function OrderDetailPage() {
             </dl>
           </div>
 
-          {/* Shipping Address */}
+          {/* Delivery & Shipping */}
           <div className="card p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-              Endereço de Entrega
+              Entrega & Pagamento
             </h2>
-            <address className="text-sm not-italic leading-relaxed">
-              <p className="font-medium">{order.customer_name}</p>
-              <p>{order.shipping_address}</p>
-              <p>
-                {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
-              </p>
-            </address>
+            <dl className="flex flex-col gap-2 text-sm">
+              <div>
+                <dt className="text-muted-foreground">Método de Entrega</dt>
+                <dd className="font-medium">
+                  {order.delivery_method === 'pickup' ? 'Retirada na Loja' : 'Entrega'}
+                </dd>
+              </div>
+              {order.delivery_method === 'delivery' && (
+                <div>
+                  <dt className="text-muted-foreground">Endereço</dt>
+                  <dd className="font-medium">
+                    {order.shipping_address}<br />
+                    {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
+                  </dd>
+                </div>
+              )}
+              {order.payment_method !== 'pay_on_pickup' && (
+                <div>
+                  <dt className="text-muted-foreground">Forma de Pagamento</dt>
+                  <dd className="font-medium">
+                    {{ credit_card: 'Cartão de Crédito', debit_card: 'Cartão de Débito', cash: 'Dinheiro', pix: 'PIX' }[order.payment_method] || order.payment_method}
+                  </dd>
+                </div>
+              )}
+              {order.payment_method === 'cash' && order.change_for != null && (
+                <div>
+                  <dt className="text-muted-foreground">Troco para</dt>
+                  <dd className="font-medium">{formatCurrency(order.change_for)}</dd>
+                </div>
+              )}
+            </dl>
           </div>
 
           {/* Status Update */}

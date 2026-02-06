@@ -199,11 +199,14 @@ export const storeApi = {
     customer_name: string;
     customer_email: string;
     customer_phone?: string;
-    shipping_address: string;
-    shipping_city: string;
-    shipping_state: string;
-    shipping_zip: string;
+    shipping_address?: string;
+    shipping_city?: string;
+    shipping_state?: string;
+    shipping_zip?: string;
     notes?: string;
+    delivery_method: 'pickup' | 'delivery';
+    payment_method: 'credit_card' | 'debit_card' | 'cash' | 'pix' | 'pay_on_pickup';
+    change_for?: number;
     items: { product_id: number; quantity: number }[];
   }) {
     return api.post<Order>('/store/orders', data).then((r) => r.data);
