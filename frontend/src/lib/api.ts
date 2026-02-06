@@ -75,6 +75,18 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
+// ---- Force logout on auth failure -------------------------------------------
+
+function forceLogout() {
+  localStorage.removeItem('admin_access_token');
+  localStorage.removeItem('admin_refresh_token');
+  localStorage.removeItem('admin_info');
+  // Redirect to login if on an admin page
+  if (window.location.pathname.startsWith('/admin')) {
+    window.location.href = '/admin/login';
+  }
+}
+
 // ---- Response interceptor (handle 401 / token refresh) ----------------------
 
 let isRefreshing = false;
@@ -100,9 +112,8 @@ api.interceptors.response.use(
       const refreshToken = localStorage.getItem('admin_refresh_token');
 
       if (!refreshToken) {
-        // No refresh token – clear everything and reject
-        localStorage.removeItem('admin_access_token');
-        localStorage.removeItem('admin_refresh_token');
+        // No refresh token – clear everything and redirect to login
+        forceLogout();
         return Promise.reject(error);
       }
 
@@ -132,8 +143,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem('admin_access_token');
-        localStorage.removeItem('admin_refresh_token');
+        forceLogout();
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

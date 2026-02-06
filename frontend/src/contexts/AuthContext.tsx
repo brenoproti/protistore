@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
-import { authApi } from '@/lib/api';
+import { authApi, adminStoreApi } from '@/lib/api';
 import type { LoginResponse } from '@/types';
 
 interface Admin {
@@ -58,6 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isTokenExpired(storedAccessToken)) {
           setAccessToken(storedAccessToken);
           setAdmin(JSON.parse(storedAdmin));
+          // Validate token against current store (backend will 401 if mismatch)
+          adminStoreApi.getStore().catch(() => {
+            clearSession();
+            if (window.location.pathname.startsWith('/admin')) {
+              window.location.href = '/admin/login';
+            }
+          });
         } else if (storedRefreshToken && !isTokenExpired(storedRefreshToken)) {
           // Access token expired but refresh token is valid -- attempt refresh
           authApi.refresh(storedRefreshToken)
@@ -68,6 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             })
             .catch(() => {
               clearSession();
+              if (window.location.pathname.startsWith('/admin')) {
+                window.location.href = '/admin/login';
+              }
             });
         } else {
           // Both tokens expired

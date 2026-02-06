@@ -386,17 +386,19 @@ export default function ProductsPage() {
   }
 
   // ---- Data fetching ----
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categoriesRaw } = useQuery<Category[]>({
     queryKey: ['categories'],
     queryFn: () => storeApi.getCategories(),
     staleTime: 5 * 60 * 1000,
   });
+  const categories = categoriesRaw ?? [];
 
-  const { data: brands = [] } = useQuery<Brand[]>({
+  const { data: brandsRaw } = useQuery<Brand[]>({
     queryKey: ['brands'],
     queryFn: () => storeApi.getBrands(),
     staleTime: 5 * 60 * 1000,
   });
+  const brands = brandsRaw ?? [];
 
   const { data: productsData, isLoading: productsLoading } = useQuery({
     queryKey: ['products', apiParams],

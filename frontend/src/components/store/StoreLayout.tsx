@@ -4,12 +4,26 @@ import { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { useStore } from '@/contexts/StoreContext';
 
+/** Returns true if a hex color is "dark" (text on top should be white). */
+function isDark(hex: string): boolean {
+  const c = hex.replace('#', '');
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  // Relative luminance formula (perceived brightness)
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.55;
+}
+
 export function StoreLayout() {
   const { store, customization } = useStore();
   const { totalItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
+
+  const headerBg = customization?.header_bg_color || '#ffffff';
+  const headerTextColor = isDark(headerBg) ? '#ffffff' : '#1f2937';
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +37,7 @@ export function StoreLayout() {
     <div className="flex min-h-screen flex-col">
       <header
         className="sticky top-0 z-50 border-b shadow-sm"
-        style={{ backgroundColor: customization?.header_bg_color || '#ffffff' }}
+        style={{ backgroundColor: headerBg, color: headerTextColor }}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
@@ -37,16 +51,16 @@ export function StoreLayout() {
               {store?.logo_url ? (
                 <img src={store.logo_url} alt={store?.name || ''} className="h-8 w-auto object-contain" />
               ) : (
-                <span className="text-xl font-bold text-primary">{store?.name}</span>
+                <span className="text-xl font-bold" style={{ color: headerTextColor }}>{store?.name}</span>
               )}
             </Link>
           </div>
 
           <nav className="hidden items-center gap-6 md:flex">
-            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/" className="text-sm font-medium hover:text-primary transition-colors" style={{ color: 'inherit' }}>
               Início
             </Link>
-            <Link to="/products" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/products" className="text-sm font-medium hover:text-primary transition-colors" style={{ color: 'inherit' }}>
               Produtos
             </Link>
           </nav>

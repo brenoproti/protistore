@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Palette } from 'lucide-react';
+import { Loader2, Palette, ShoppingCart, Search } from 'lucide-react';
 import { adminStoreApi } from '@/lib/api';
 import type { StoreCustomization } from '@/types';
 import { toast } from 'sonner';
 import { Select } from '@/components/ui/Select';
+
+function isDark(hex: string): boolean {
+  const c = hex.replace('#', '');
+  if (c.length < 6) return false;
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.55;
+}
 
 const COLOR_FIELDS: { key: keyof StoreCustomization; label: string }[] = [
   { key: 'primary_color', label: 'Cor Primária' },
@@ -15,6 +24,106 @@ const COLOR_FIELDS: { key: keyof StoreCustomization; label: string }[] = [
   { key: 'header_bg_color', label: 'Fundo do Cabeçalho' },
   { key: 'footer_bg_color', label: 'Fundo do Rodapé' },
 ];
+
+function PreviewMiniStore({ form }: { form: Partial<StoreCustomization> }) {
+  const primary = (form.primary_color as string) || '#6366f1';
+  const accent = (form.accent_color as string) || '#f59e0b';
+  const bg = (form.background_color as string) || '#ffffff';
+  const text = (form.text_color as string) || '#1f2937';
+  const headerBg = (form.header_bg_color as string) || '#ffffff';
+  const footerBg = (form.footer_bg_color as string) || '#1f2937';
+  const font = form.font_family || 'Inter';
+  const radius = form.border_radius || '8px';
+
+  const headerText = isDark(headerBg) ? '#ffffff' : '#1f2937';
+  const footerText = isDark(footerBg) ? '#ffffff' : '#1f2937';
+  const btnText = isDark(primary) ? '#ffffff' : '#1f2937';
+
+  return (
+    <div
+      className="overflow-hidden rounded-lg border shadow-sm"
+      style={{ fontFamily: font, fontSize: 10, lineHeight: 1.4 }}
+    >
+      {/* Header */}
+      <div
+        className="flex items-center justify-between px-3 py-2"
+        style={{ backgroundColor: headerBg, color: headerText, borderBottom: '1px solid rgba(0,0,0,0.08)' }}
+      >
+        <span className="font-bold" style={{ fontSize: 11 }}>Sua Loja</span>
+        <div className="flex items-center gap-2">
+          <Search size={10} style={{ opacity: 0.5 }} />
+          <div className="relative">
+            <ShoppingCart size={11} />
+            <span
+              className="absolute -top-1.5 -right-1.5 flex h-3 w-3 items-center justify-center rounded-full text-[7px] font-bold"
+              style={{ backgroundColor: primary, color: btnText }}
+            >
+              2
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{ backgroundColor: bg, color: text }}>
+        {/* Banner */}
+        <div
+          className="flex items-center justify-center"
+          style={{ height: 44, backgroundColor: primary, color: btnText }}
+        >
+          <span className="font-bold" style={{ fontSize: 11 }}>Novidades da temporada</span>
+        </div>
+
+        {/* Products */}
+        <div className="px-3 pt-3 pb-1">
+          <div className="flex items-center justify-between mb-2">
+            <span className="font-bold" style={{ fontSize: 10 }}>Destaques</span>
+            <span style={{ color: primary, fontSize: 8 }}>Ver todos →</span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {[{ name: 'Produto A', badge: true }, { name: 'Produto B', badge: false }].map(p => (
+              <div key={p.name} className="overflow-hidden" style={{ borderRadius: radius, border: '1px solid rgba(0,0,0,0.06)' }}>
+                <div className="relative" style={{ height: 36, backgroundColor: `${primary}10` }}>
+                  {p.badge && (
+                    <span
+                      className="absolute top-1 left-1 px-1 rounded font-bold"
+                      style={{ fontSize: 7, backgroundColor: accent, color: isDark(accent) ? '#fff' : '#1f2937' }}
+                    >
+                      OFERTA
+                    </span>
+                  )}
+                </div>
+                <div className="p-1.5">
+                  <div className="font-medium" style={{ fontSize: 9 }}>{p.name}</div>
+                  <div className="font-bold" style={{ color: primary, fontSize: 10 }}>R$ 99,90</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Button */}
+        <div className="px-3 py-3">
+          <div
+            className="flex items-center justify-center font-bold"
+            style={{ backgroundColor: primary, color: btnText, borderRadius: radius, padding: '5px 0', fontSize: 10 }}
+          >
+            Comprar Agora
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div
+        className="px-3 py-2"
+        style={{ backgroundColor: footerBg, color: footerText }}
+      >
+        <div className="font-bold" style={{ fontSize: 9 }}>Sua Loja</div>
+        <div style={{ opacity: 0.4, fontSize: 7, marginTop: 2 }}>© 2026 Todos os direitos reservados.</div>
+      </div>
+    </div>
+  );
+}
 
 export function CustomizationPage() {
   const queryClient = useQueryClient();
@@ -145,66 +254,7 @@ export function CustomizationPage() {
           <div className="space-y-4">
             <div className="sticky top-24 rounded-lg border p-6">
               <h2 className="mb-4 font-semibold">Pré-visualização</h2>
-              <div
-                className="overflow-hidden rounded-lg border"
-                style={{
-                  fontFamily: form.font_family || 'Inter',
-                  backgroundColor: (form.background_color as string) || '#ffffff',
-                  color: (form.text_color as string) || '#1f2937',
-                }}
-              >
-                {/* Mini header */}
-                <div className="p-3" style={{ backgroundColor: (form.header_bg_color as string) || '#ffffff' }}>
-                  <div className="text-sm font-bold" style={{ color: (form.primary_color as string) || '#6366f1' }}>
-                    Sua Loja
-                  </div>
-                </div>
-                {/* Mini content */}
-                <div className="p-3 space-y-2">
-                  <div
-                    className="h-16 rounded flex items-center justify-center text-white text-xs font-medium"
-                    style={{
-                      backgroundColor: (form.primary_color as string) || '#6366f1',
-                      borderRadius: form.border_radius || '8px',
-                    }}
-                  >
-                    Banner
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[1, 2].map(i => (
-                      <div key={i} className="space-y-1">
-                        <div
-                          className="h-12 bg-muted"
-                          style={{ borderRadius: form.border_radius || '8px' }}
-                        />
-                        <div className="text-[10px] font-medium">Produto {i}</div>
-                        <div
-                          className="text-[10px] font-bold"
-                          style={{ color: (form.primary_color as string) || '#6366f1' }}
-                        >
-                          R$29,99
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    className="w-full py-1.5 text-[10px] font-medium text-white rounded"
-                    style={{
-                      backgroundColor: (form.primary_color as string) || '#6366f1',
-                      borderRadius: form.border_radius || '8px',
-                    }}
-                  >
-                    Adicionar ao Carrinho
-                  </button>
-                </div>
-                {/* Mini footer */}
-                <div
-                  className="p-3 text-[10px] text-white opacity-75"
-                  style={{ backgroundColor: (form.footer_bg_color as string) || '#1f2937' }}
-                >
-                  Área do Rodapé
-                </div>
-              </div>
+              <PreviewMiniStore form={form} />
 
               <button
                 type="submit"

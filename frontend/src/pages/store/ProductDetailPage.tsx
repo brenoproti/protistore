@@ -142,7 +142,7 @@ function ImageGallery({ images }: { images: Product['images'] }) {
   const [selectedIdx, setSelectedIdx] = useState(0);
 
   const sorted = useMemo(
-    () => [...images].sort((a, b) => a.sort_order - b.sort_order),
+    () => [...(images ?? [])].sort((a, b) => a.sort_order - b.sort_order),
     [images],
   );
 

@@ -5,7 +5,7 @@ import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { ChevronRight } from 'lucide-react';
 import { storeApi } from '@/lib/api';
-import type { Banner, Category, Product } from '@/types';
+import type { Banner, Brand, Category, Product } from '@/types';
 import { ProductCard } from '@/components/store/ProductCard';
 
 // ---------------------------------------------------------------------------
@@ -167,6 +167,16 @@ export default function HomePage() {
   });
 
   const {
+    data: recentData,
+    isLoading: recentLoading,
+  } = useQuery({
+    queryKey: ['products', 'recent'],
+    queryFn: () => storeApi.getProducts({ per_page: 8 }),
+    // Only fetch if featured returned empty
+    enabled: !featuredLoading && (featuredData?.data ?? []).length === 0,
+  });
+
+  const {
     data: categories,
     isLoading: categoriesLoading,
   } = useQuery<Category[]>({
@@ -174,7 +184,18 @@ export default function HomePage() {
     queryFn: () => storeApi.getCategories(),
   });
 
+  const {
+    data: brands,
+    isLoading: brandsLoading,
+  } = useQuery<Brand[]>({
+    queryKey: ['brands'],
+    queryFn: () => storeApi.getBrands(),
+  });
+
   const featuredProducts: Product[] = featuredData?.data ?? [];
+  const hasFeatured = featuredProducts.length > 0;
+  const displayProducts: Product[] = hasFeatured ? featuredProducts : (recentData?.data ?? []);
+  const productsLoading = featuredLoading || (!hasFeatured && recentLoading);
 
   return (
     <div className="flex flex-col gap-10 pb-12">
@@ -187,31 +208,79 @@ export default function HomePage() {
         ) : null}
       </section>
 
-      {/* ---- Featured Products ---- */}
+      {/* ---- Featured / Recent Products ---- */}
       <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold">Produtos em Destaque</h2>
+          <h2 className="text-2xl font-bold">
+            {hasFeatured ? 'Produtos em Destaque' : 'Novidades'}
+          </h2>
           <Link
-            to="/products?featured=true"
+            to={hasFeatured ? '/products?featured=true' : '/products'}
             className="btn btn-ghost gap-1 text-primary"
           >
             Ver todos <ChevronRight size={16} />
           </Link>
         </div>
 
-        {featuredLoading ? (
+        {productsLoading ? (
           <ProductGridSkeleton />
-        ) : featuredProducts.length > 0 ? (
+        ) : displayProducts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {featuredProducts.map((product) => (
+            {displayProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-12">
-            Nenhum produto em destaque ainda.
+            Nenhum produto disponível ainda.
           </p>
         )}
+      </section>
+
+      {/* ---- Brands ---- */}
+      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold">Navegue por Marca</h2>
+          <Link
+            to="/products"
+            className="btn btn-ghost gap-1 text-primary"
+          >
+            Todos os produtos <ChevronRight size={16} />
+          </Link>
+        </div>
+
+        {brandsLoading ? (
+          <CategoryGridSkeleton count={6} />
+        ) : brands && brands.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            {brands.map((brand) => (
+              <Link
+                key={brand.id}
+                to={`/products?brand_ids=${brand.id}`}
+                className="card group flex flex-col items-center text-center hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-[4/3] w-full overflow-hidden bg-muted flex items-center justify-center p-4">
+                  {brand.logo_url ? (
+                    <img
+                      src={brand.logo_url}
+                      alt={brand.name}
+                      className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <span className="text-muted-foreground text-3xl font-bold">
+                      {brand.name.charAt(0)}
+                    </span>
+                  )}
+                </div>
+                <div className="p-3">
+                  <h3 className="text-sm font-medium group-hover:text-primary transition-colors">
+                    {brand.name}
+                  </h3>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       {/* ---- Categories ---- */}
