@@ -20,6 +20,7 @@ import { CartPage } from '@/pages/store/CartPage';
 import { CheckoutPage } from '@/pages/store/CheckoutPage';
 import { OrderConfirmationPage } from '@/pages/store/OrderConfirmationPage';
 import { OrderTrackingPage } from '@/pages/store/OrderTrackingPage';
+import { PrivacyPolicyPage } from '@/pages/store/PrivacyPolicyPage';
 
 // Admin pages
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -98,6 +99,7 @@ export default function App() {
                 <Route path="checkout" element={<CheckoutPage />} />
                 <Route path="order-confirmation" element={<OrderConfirmationPage />} />
                 <Route path="rastreio" element={<OrderTrackingPage />} />
+                <Route path="privacidade" element={<PrivacyPolicyPage />} />
               </Route>
 
               <Route path="*" element={<Navigate to="/" replace />} />

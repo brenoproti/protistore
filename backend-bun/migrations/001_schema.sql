@@ -20,7 +20,6 @@ CREATE TABLE IF NOT EXISTS store_customizations (
     accent_color VARCHAR(7) NOT NULL DEFAULT '#f59e0b',
     header_bg_color VARCHAR(7) NOT NULL DEFAULT '#ffffff',
     footer_bg_color VARCHAR(7) NOT NULL DEFAULT '#1f2937',
-    custom_css TEXT,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE,

@@ -42,14 +42,13 @@ export async function getCustomization(storeId: number): Promise<StoreCustomizat
 export async function upsertCustomization(c: StoreCustomization): Promise<void> {
   await getPool().query(
     `INSERT INTO store_customizations
-     (store_id, primary_color, accent_color, header_bg_color, footer_bg_color, custom_css)
-     VALUES (?, ?, ?, ?, ?, ?)
+     (store_id, primary_color, accent_color, header_bg_color, footer_bg_color)
+     VALUES (?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
      primary_color = VALUES(primary_color),
      accent_color = VALUES(accent_color),
      header_bg_color = VALUES(header_bg_color),
-     footer_bg_color = VALUES(footer_bg_color),
-     custom_css = VALUES(custom_css)`,
-    [c.store_id, c.primary_color, c.accent_color, c.header_bg_color, c.footer_bg_color, c.custom_css]
+     footer_bg_color = VALUES(footer_bg_color)`,
+    [c.store_id, c.primary_color, c.accent_color, c.header_bg_color, c.footer_bg_color]
   );
 }

@@ -57,7 +57,6 @@ export const adminStoreRoutes = new Elysia({ prefix: "/api/v1/admin" })
       accent_color: "#f59e0b",
       header_bg_color: "#ffffff",
       footer_bg_color: "#1f2937",
-      custom_css: null,
     };
   })
   .put("/customization", async ({ body, storeId }) => {
@@ -69,7 +68,6 @@ export const adminStoreRoutes = new Elysia({ prefix: "/api/v1/admin" })
       accent_color: req.accent_color,
       header_bg_color: req.header_bg_color,
       footer_bg_color: req.footer_bg_color,
-      custom_css: req.custom_css ?? null,
       created_at: "",
       updated_at: "",
     };

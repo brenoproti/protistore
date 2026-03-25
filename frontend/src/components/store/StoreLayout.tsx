@@ -25,7 +25,7 @@ export function StoreLayout() {
 
   const headerBg = customization?.header_bg_color || '#ffffff';
   const headerTextColor = isDark(headerBg) ? '#ffffff' : '#1f2937';
-  const isAdmin = !!localStorage.getItem('admin_access_token');
+  const isAdmin = !!localStorage.getItem('admin_info');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

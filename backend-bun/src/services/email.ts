@@ -166,7 +166,7 @@ export async function sendOrderConfirmation(order: Order, storeName: string): Pr
       subject: `Pedido ${order.order_number} confirmado — ${storeName}`,
       html: orderConfirmationHtml(order, storeName),
     });
-    logger.info(`Order confirmation sent to ${order.customer_email}`);
+    logger.info({ orderNumber: order.order_number }, "Order confirmation sent");
   } catch (err) {
     logger.error(err, "Failed to send order confirmation");
   }
@@ -238,7 +238,7 @@ export async function sendStatusUpdate(order: Order, storeName: string): Promise
       subject: `Pedido ${order.order_number} — Status atualizado — ${storeName}`,
       html: statusUpdateHtml(order, storeName),
     });
-    logger.info(`Status update sent to ${order.customer_email}`);
+    logger.info({ orderNumber: order.order_number }, "Status update sent");
   } catch (err) {
     logger.error(err, "Failed to send status update");
   }

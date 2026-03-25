@@ -18,7 +18,6 @@ export interface StoreCustomization {
   accent_color: string;
   header_bg_color: string;
   footer_bg_color: string;
-  custom_css: string | null;
 }
 
 export interface Category {

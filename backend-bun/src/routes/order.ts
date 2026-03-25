@@ -1,15 +1,18 @@
 import Elysia from "elysia";
 import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
+import { rateLimit } from "../middleware/rateLimit";
 import * as orderRepo from "../repositories/order";
 import * as productRepo from "../repositories/product";
 import * as storeRepo from "../repositories/store";
 import * as adminRepo from "../repositories/admin";
 import { sendOrderConfirmation, sendStatusUpdate, notifyStoreNewOrder } from "../services/email";
+import { logger } from "../logger";
 import type { CartValidationRequest, CheckoutRequest, UpdateOrderStatusRequest, CartValidatedItem } from "../types";
 
 export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
+  .use(rateLimit({ name: "checkout", max: 5, windowSec: 60 }))
   .post("/store/cart", async ({ body, storeId }) => {
     const req = body as CartValidationRequest;
     const items: CartValidatedItem[] = [];
@@ -54,6 +57,12 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
     if (!req.customer_name || !req.customer_email || !req.items || req.items.length === 0) {
       set.status = 400;
       return { code: "VALIDATION_ERROR", message: "customer_name, customer_email, and items are required" };
+    }
+
+    // LGPD: require explicit privacy consent
+    if (!req.privacy_accepted) {
+      set.status = 400;
+      return { code: "VALIDATION_ERROR", message: "Aceite da Política de Privacidade é obrigatório" };
     }
 
     // Validate delivery/payment methods
@@ -169,8 +178,9 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
 
       return order;
     } catch (err: unknown) {
-      set.status = 400;
-      return { code: "VALIDATION_ERROR", message: (err as Error).message };
+      logger.error(err, "Failed to create order");
+      set.status = 500;
+      return { code: "INTERNAL_ERROR", message: "Erro ao criar pedido. Tente novamente." };
     }
   })
   .get("/store/orders", async ({ query, storeId, set }) => {

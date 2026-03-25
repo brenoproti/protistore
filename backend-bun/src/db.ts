@@ -17,7 +17,7 @@ export function getPool(): Pool {
       waitForConnections: true,
       connectionLimit: 10,
       charset: "utf8mb4",
-      multipleStatements: true,
+      multipleStatements: false,
       decimalNumbers: true,
       typeCast: function (field, next) {
         if (field.type === "TINY" && field.length === 1) {
@@ -36,11 +36,26 @@ export async function runMigrations(): Promise<void> {
     .filter((f) => f.endsWith(".sql"))
     .sort();
 
-  const db = getPool();
-  for (const file of files) {
-    const sql = await readFile(join(migrationsDir, file), "utf-8");
-    await db.query(sql);
-    logger.info(`Migration applied: ${file}`);
+  // Migrations need multipleStatements; use a separate short-lived pool
+  const migrationPool = mysql.createPool({
+    host: config.dbHost,
+    port: config.dbPort,
+    user: config.dbUser,
+    password: config.dbPass,
+    database: config.dbName,
+    charset: "utf8mb4",
+    multipleStatements: true,
+    connectionLimit: 1,
+  });
+
+  try {
+    for (const file of files) {
+      const sql = await readFile(join(migrationsDir, file), "utf-8");
+      await migrationPool.query(sql);
+      logger.info(`Migration applied: ${file}`);
+    }
+  } finally {
+    await migrationPool.end();
   }
 }
 

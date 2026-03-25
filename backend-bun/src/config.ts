@@ -1,10 +1,18 @@
+function requireEnv(name: string, fallback?: string): string {
+  const val = process.env[name] || fallback;
+  if (!val) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
+  return val;
+}
+
 export const config = {
   dbHost: process.env.DB_HOST || "localhost",
   dbPort: parseInt(process.env.DB_PORT || "3308"),
-  dbUser: process.env.DB_USER || "vibestore",
-  dbPass: process.env.DB_PASS || "vibestore123",
+  dbUser: requireEnv("DB_USER", process.env.NODE_ENV === "production" ? undefined : "vibestore"),
+  dbPass: requireEnv("DB_PASS", process.env.NODE_ENV === "production" ? undefined : "vibestore123"),
   dbName: process.env.DB_NAME || "vibestore",
-  jwtSecret: process.env.JWT_SECRET || "super-secret-key-change-in-production",
+  jwtSecret: requireEnv("JWT_SECRET", process.env.NODE_ENV === "production" ? undefined : "dev-only-secret-not-for-production"),
   uploadDir: process.env.UPLOAD_DIR || "./uploads",
   serverPort: parseInt(process.env.SERVER_PORT || "8081"),
   s3Bucket: process.env.S3_BUCKET || "",

@@ -8,7 +8,7 @@ import type { PresignRequestBody } from "../types";
 export const presignRoutes = new Elysia({ prefix: "/api/v1/admin" })
   .use(tenantMiddleware)
   .use(authMiddleware)
-  .post("/presign", async ({ body, set }) => {
+  .post("/presign", async ({ body, storeId, set }) => {
     if (!config.s3Bucket || !config.s3AccessKey) {
       set.status = 501;
       return { code: "NOT_CONFIGURED", message: "S3 is not configured" };
@@ -52,7 +52,7 @@ export const presignRoutes = new Elysia({ prefix: "/api/v1/admin" })
       }
 
       const client = new S3Client(clientOpts as ConstructorParameters<typeof S3Client>[0]);
-      const key = `uploads/${crypto.randomUUID()}${ext}`;
+      const key = `uploads/store-${storeId}/${crypto.randomUUID()}${ext}`;
 
       const command = new PutObjectCommand({
         Bucket: config.s3Bucket,

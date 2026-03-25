@@ -55,17 +55,12 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
 // ---- Request interceptor ----------------------------------------------------
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  // Attach bearer token when available
-  const token = localStorage.getItem('admin_access_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-
   // Attach store slug header for store-scoped requests
   const slug = getStoreSlug();
   if (slug) {
@@ -78,9 +73,10 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 // ---- Force logout on auth failure -------------------------------------------
 
 function forceLogout() {
+  localStorage.removeItem('admin_info');
+  // Also clear legacy tokens if present
   localStorage.removeItem('admin_access_token');
   localStorage.removeItem('admin_refresh_token');
-  localStorage.removeItem('admin_info');
   // Redirect to login if on an admin page
   if (window.location.pathname.startsWith('/admin')) {
     window.location.href = '/admin/login';
@@ -90,12 +86,12 @@ function forceLogout() {
 // ---- Response interceptor (handle 401 / token refresh) ----------------------
 
 let isRefreshing = false;
-let failedQueue: { resolve: (token: string) => void; reject: (err: unknown) => void }[] = [];
+let failedQueue: { resolve: () => void; reject: (err: unknown) => void }[] = [];
 
-function processQueue(error: unknown, token: string | null = null) {
+function processQueue(error: unknown) {
   failedQueue.forEach((prom) => {
-    if (token) {
-      prom.resolve(token);
+    if (!error) {
+      prom.resolve();
     } else {
       prom.reject(error);
     }
@@ -109,40 +105,24 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
     if (error.response?.status === 401 && !originalRequest._retry) {
-      const refreshToken = localStorage.getItem('admin_refresh_token');
-
-      if (!refreshToken) {
-        // No refresh token – clear everything and redirect to login
-        forceLogout();
-        return Promise.reject(error);
-      }
-
       if (isRefreshing) {
         // Another refresh is already in-flight – queue this request
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
-          return api(originalRequest);
-        });
+        }).then(() => api(originalRequest));
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
       try {
-        const { data } = await axios.post<{ access_token: string }>('/api/v1/auth/refresh', {
-          refresh_token: refreshToken,
-        });
+        // Refresh token is sent automatically via httpOnly cookie
+        await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true });
 
-        const newToken = data.access_token;
-        localStorage.setItem('admin_access_token', newToken);
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-        processQueue(null, newToken);
+        processQueue(null);
         return api(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
+        processQueue(refreshError);
         forceLogout();
         return Promise.reject(refreshError);
       } finally {
@@ -207,6 +187,7 @@ export const storeApi = {
     delivery_method: 'pickup' | 'delivery';
     payment_method: 'credit_card' | 'debit_card' | 'cash' | 'pix' | 'pay_on_pickup';
     change_for?: number;
+    privacy_accepted: boolean;
     items: { product_id: number; quantity: number }[];
   }) {
     return api.post<Order>('/store/orders', data).then((r) => r.data);
@@ -223,19 +204,19 @@ export const storeApi = {
 // ===========================================================================
 
 export const authApi = {
-  /** Admin login. */
+  /** Admin login. Cookies are set by the server. */
   login(email: string, password: string) {
     return api.post<LoginResponse>('/auth/login', { email, password }).then((r) => r.data);
   },
 
-  /** Refresh access token. */
-  refresh(refreshToken: string) {
-    return api.post<LoginResponse>('/auth/refresh', { refresh_token: refreshToken }).then((r) => r.data);
+  /** Refresh access token. Refresh token cookie is sent automatically. */
+  refresh() {
+    return api.post<LoginResponse>('/auth/refresh', {}).then((r) => r.data);
   },
 
-  /** Logout (invalidate tokens server-side). */
+  /** Logout (revokes refresh token and clears cookies server-side). */
   logout() {
-    return api.post('/auth/logout').then((r) => r.data);
+    return api.post('/auth/logout', {}).then((r) => r.data);
   },
 };
 

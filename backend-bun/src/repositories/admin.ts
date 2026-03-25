@@ -1,10 +1,10 @@
 import { getPool, type RowDataPacket } from "../db";
 import type { StoreAdmin } from "../types";
 
-export async function findAdminByEmail(email: string): Promise<StoreAdmin | null> {
+export async function findAdminByEmail(email: string, storeId: number): Promise<StoreAdmin | null> {
   const [rows] = await getPool().query<RowDataPacket[]>(
-    "SELECT * FROM store_admins WHERE email = ?",
-    [email]
+    "SELECT * FROM store_admins WHERE email = ? AND store_id = ?",
+    [email, storeId]
   );
   return (rows[0] as StoreAdmin) ?? null;
 }

@@ -30,9 +30,16 @@ async function main() {
   await runMigrations();
   logger.info("All migrations applied.");
 
+  const MAX_BODY_SIZE = 10 * 1024 * 1024; // 10 MB global limit
+
   const app = new Elysia()
     .onRequest(({ request }) => {
       (request as any).__start = Date.now();
+
+      const contentLength = Number(request.headers.get("content-length") || "0");
+      if (contentLength > MAX_BODY_SIZE) {
+        throw new Error("PAYLOAD_TOO_LARGE");
+      }
     })
     .onAfterResponse(({ request, set }) => {
       const ms = Date.now() - ((request as any).__start || Date.now());
@@ -46,7 +53,19 @@ async function main() {
       const level = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
       logger[level]({ method, url, status, ms }, `${method} ${url}`);
     })
+    // Security headers
+    .onAfterHandle(({ set }) => {
+      set.headers["X-Content-Type-Options"] = "nosniff";
+      set.headers["X-Frame-Options"] = "DENY";
+      set.headers["X-XSS-Protection"] = "1; mode=block";
+      set.headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
+      set.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()";
+    })
     .onError(({ code, error, set }) => {
+      if (error.message === "PAYLOAD_TOO_LARGE") {
+        set.status = 413;
+        return { code: "PAYLOAD_TOO_LARGE", message: "Request body too large" };
+      }
       if (code === "NOT_FOUND") {
         set.status = 404;
         return { code: "NOT_FOUND", message: "Route not found" };
@@ -57,7 +76,7 @@ async function main() {
     })
     .use(
       cors({
-        origin: /^https?:\/\/.*\.(localhost|protistore\.com)(:\d+)?$/,
+        origin: /^https?:\/\/([a-z0-9-]+\.)?(localhost|protistore\.com)(:\d+)?$/,
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allowedHeaders: ["Accept", "Authorization", "Content-Type", "X-Store-Slug"],
         exposeHeaders: ["Link"],
@@ -69,7 +88,13 @@ async function main() {
     .get("/health", () => ({ status: "ok" }))
     // Static files
     .get("/uploads/*", async ({ params, set }) => {
-      const filePath = `${config.uploadDir}/${(params as Record<string, string>)["*"]}`;
+      const requestedPath = (params as Record<string, string>)["*"];
+      // Prevent path traversal
+      if (requestedPath.includes("..") || requestedPath.includes("\0")) {
+        set.status = 400;
+        return { code: "BAD_REQUEST", message: "Invalid file path" };
+      }
+      const filePath = `${config.uploadDir}/${requestedPath}`;
       const file = Bun.file(filePath);
       if (await file.exists()) {
         return file;

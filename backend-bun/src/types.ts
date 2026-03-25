@@ -20,7 +20,6 @@ export interface StoreCustomization {
   accent_color: string;
   header_bg_color: string;
   footer_bg_color: string;
-  custom_css: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -178,7 +177,6 @@ export interface UpdateCustomizationRequest {
   accent_color: string;
   header_bg_color: string;
   footer_bg_color: string;
-  custom_css?: string | null;
 }
 
 export interface CategoryRequest {
@@ -265,6 +263,7 @@ export interface CheckoutRequest {
   delivery_method: string;
   payment_method: string;
   change_for?: number | null;
+  privacy_accepted?: boolean;
   items: CartItem[];
 }
 

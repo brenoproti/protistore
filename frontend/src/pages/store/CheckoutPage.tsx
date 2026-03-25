@@ -20,6 +20,9 @@ const checkoutSchema = z.object({
   payment_method: z.enum(['credit_card', 'debit_card', 'cash', 'pix']).optional(),
   change_for: z.string().optional(),
   notes: z.string().optional(),
+  privacy_accepted: z.literal(true, {
+    errorMap: () => ({ message: 'Você precisa aceitar a Política de Privacidade para continuar' }),
+  }),
 }).superRefine((data, ctx) => {
   if (data.delivery_method === 'delivery') {
     if (!data.shipping_address || data.shipping_address.length < 5) {
@@ -101,6 +104,7 @@ export function CheckoutPage() {
         payment_method: isPickup ? 'pay_on_pickup' : data.payment_method!,
         change_for: changeForNum,
         notes: data.notes || undefined,
+        privacy_accepted: true,
         items: items.map(i => ({ product_id: i.product_id, quantity: i.quantity })),
       });
       clearCart();
@@ -315,10 +319,26 @@ export function CheckoutPage() {
                   <span className="text-primary">R$ {totalPrice.toFixed(2)}</span>
                 </div>
               </div>
+              <label className="mt-6 flex items-start gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  {...register('privacy_accepted')}
+                  className="mt-0.5 h-4 w-4 rounded border-border accent-primary"
+                />
+                <span className="text-muted-foreground">
+                  Li e concordo com a{' '}
+                  <Link to="/privacidade" target="_blank" className="text-primary underline hover:text-primary/80">
+                    Politica de Privacidade
+                  </Link>
+                </span>
+              </label>
+              {errors.privacy_accepted && (
+                <p className="mt-1 text-xs text-destructive">{errors.privacy_accepted.message}</p>
+              )}
               <button
                 type="submit"
                 disabled={submitting}
-                className="btn btn-primary btn-lg mt-6 w-full gap-2"
+                className="btn btn-primary btn-lg mt-4 w-full gap-2"
               >
                 {submitting && <Loader2 size={16} className="animate-spin" />}
                 {submitting ? 'Confirmando Pedido...' : 'Confirmar Pedido'}

@@ -56,11 +56,7 @@ export async function findProductsByStoreID(
   );
 
   const products = rows as Product[];
-
-  // Load images for each product
-  for (const product of products) {
-    product.images = await findImagesByProductID(product.id);
-  }
+  await loadImagesForProducts(products);
 
   return { products, total };
 }
@@ -71,6 +67,14 @@ export async function findAllProductsByStoreID(storeId: number): Promise<Product
     [storeId]
   );
   return rows as Product[];
+}
+
+export async function countProductsByStoreID(storeId: number): Promise<number> {
+  const [rows] = await getPool().query<RowDataPacket[]>(
+    "SELECT COUNT(*) as total FROM products WHERE store_id = ?",
+    [storeId]
+  );
+  return (rows[0] as { total: number }).total;
 }
 
 export async function findProductByID(id: number, storeId: number): Promise<Product | null> {
@@ -116,10 +120,7 @@ export async function findRelatedProducts(
 
   const [rows] = await getPool().query<RowDataPacket[]>(query, args);
   const products = rows as Product[];
-
-  for (const product of products) {
-    product.images = await findImagesByProductID(product.id);
-  }
+  await loadImagesForProducts(products);
 
   return products;
 }
@@ -163,6 +164,24 @@ export async function findImagesByProductID(productId: number): Promise<ProductI
     [productId]
   );
   return rows as ProductImage[];
+}
+
+async function loadImagesForProducts(products: Product[]): Promise<void> {
+  if (products.length === 0) return;
+  const ids = products.map((p) => p.id);
+  const [rows] = await getPool().query<RowDataPacket[]>(
+    `SELECT * FROM product_images WHERE product_id IN (${ids.map(() => "?").join(",")}) ORDER BY sort_order`,
+    ids
+  );
+  const imagesByProduct = new Map<number, ProductImage[]>();
+  for (const row of rows as ProductImage[]) {
+    const list = imagesByProduct.get(row.product_id) || [];
+    list.push(row);
+    imagesByProduct.set(row.product_id, list);
+  }
+  for (const product of products) {
+    product.images = imagesByProduct.get(product.id) || [];
+  }
 }
 
 export async function replaceImages(productId: number, images: { url: string; alt_text?: string | null; sort_order: number }[]): Promise<void> {

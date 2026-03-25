@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import DOMPurify from 'dompurify';
 import {
   Minus,
   Plus,
@@ -307,7 +308,7 @@ export default function ProductDetailPage() {
           {product.description && (
             <div
               className="prose prose-sm max-w-none text-foreground/80 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: product.description }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description) }}
             />
           )}
 

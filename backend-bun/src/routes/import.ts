@@ -1,10 +1,12 @@
 import Elysia from "elysia";
 import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
+import { rateLimit } from "../middleware/rateLimit";
 import * as productRepo from "../repositories/product";
 import * as catRepo from "../repositories/category";
 import * as brandRepo from "../repositories/brand";
 import type { ImportResult, ImportError } from "../types";
+import { logger } from "../logger";
 import { parse } from "csv-parse/sync";
 import { stringify } from "csv-stringify/sync";
 
@@ -89,6 +91,7 @@ async function parseXLSXData(buffer: Buffer): Promise<string[][]> {
 export const importRoutes = new Elysia({ prefix: "/api/v1/admin/products" })
   .use(tenantMiddleware)
   .use(authMiddleware)
+  .use(rateLimit({ name: "import", max: 5, windowSec: 60 }))
   .post("/import", async ({ body, storeId, set }) => {
     const formData = body as { file?: File };
     const file = formData.file;
@@ -96,6 +99,13 @@ export const importRoutes = new Elysia({ prefix: "/api/v1/admin/products" })
     if (!file || !(file instanceof File)) {
       set.status = 400;
       return { code: "VALIDATION_ERROR", message: "Nenhum arquivo enviado" };
+    }
+
+    // Limit file size to 5MB
+    const MAX_IMPORT_SIZE = 5 * 1024 * 1024;
+    if (file.size > MAX_IMPORT_SIZE) {
+      set.status = 400;
+      return { code: "VALIDATION_ERROR", message: "Arquivo muito grande. Limite: 5MB" };
     }
 
     const ext = file.name.toLowerCase().split(".").pop();
@@ -111,7 +121,7 @@ export const importRoutes = new Elysia({ prefix: "/api/v1/admin/products" })
       rows = ext === "csv" ? await parseCSVData(buffer) : await parseXLSXData(buffer);
     } catch (err: unknown) {
       set.status = 400;
-      return { code: "VALIDATION_ERROR", message: `Erro ao ler arquivo: ${(err as Error).message}` };
+      return { code: "VALIDATION_ERROR", message: "Erro ao ler arquivo. Verifique o formato e tente novamente." };
     }
 
     if (rows.length < 2) {
@@ -219,7 +229,8 @@ export const importRoutes = new Elysia({ prefix: "/api/v1/admin/products" })
 
         result.created++;
       } catch (err: unknown) {
-        result.errors.push({ row: rowNum, message: `Erro ao salvar: ${(err as Error).message}` });
+        logger.error(err, `Failed to import product at row ${rowNum}`);
+        result.errors.push({ row: rowNum, message: "Erro ao salvar produto" });
       }
     }
 

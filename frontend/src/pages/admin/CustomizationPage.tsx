@@ -196,16 +196,6 @@ export function CustomizationPage() {
             </div>
 
 
-            {/* Custom CSS */}
-            <div className="rounded-lg border p-6">
-              <h2 className="mb-4 font-semibold">CSS Personalizado</h2>
-              <textarea
-                value={form.custom_css || ''}
-                onChange={e => updateField('custom_css', e.target.value)}
-                className="input min-h-[120px] resize-y font-mono text-xs"
-                placeholder="/* Adicione CSS personalizado aqui */"
-              />
-            </div>
           </div>
 
           {/* Preview */}

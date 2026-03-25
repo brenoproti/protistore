@@ -13,6 +13,7 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/v1/admin" })
       totalOrders,
       totalRevenue,
       totalCustomers,
+      totalProducts,
       ordersByStatus,
       recentOrders,
       topProducts,
@@ -21,19 +22,17 @@ export const dashboardRoutes = new Elysia({ prefix: "/api/v1/admin" })
       orderRepo.getTotalOrders(storeId),
       orderRepo.getTotalRevenue(storeId),
       orderRepo.getTotalCustomers(storeId),
+      productRepo.countProductsByStoreID(storeId),
       orderRepo.getOrdersByStatus(storeId),
       orderRepo.getRecentOrders(storeId, 5),
       orderRepo.getTopProducts(storeId, 5),
       orderRepo.getChartData(storeId, 30),
     ]);
 
-    // Get total products count
-    const allProducts = await productRepo.findAllProductsByStoreID(storeId);
-
     const metrics: DashboardMetrics = {
       total_orders: totalOrders,
       total_revenue: totalRevenue,
-      total_products: allProducts.length,
+      total_products: totalProducts,
       total_customers: totalCustomers,
       recent_orders: recentOrders,
       top_products: topProducts,

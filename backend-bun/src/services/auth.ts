@@ -1,11 +1,12 @@
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
 import { config } from "../config";
 import { findAdminByEmail, findAdminByID } from "../repositories/admin";
+import { isTokenRevoked, revokeToken, cleanupExpiredTokens } from "../repositories/revokedToken";
 import type { LoginRequest, LoginResponse, RefreshResponse } from "../types";
 
 const secret = new TextEncoder().encode(config.jwtSecret);
 
-interface TokenClaims extends JWTPayload {
+export interface TokenClaims extends JWTPayload {
   admin_id: number;
   store_id: number;
   email: string;
@@ -21,6 +22,7 @@ async function generateToken(
 ): Promise<string> {
   return new SignJWT({ admin_id: adminId, store_id: storeId, email, type })
     .setProtectedHeader({ alg: "HS256" })
+    .setJti(crypto.randomUUID())
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(secret);
@@ -31,16 +33,18 @@ export async function verifyToken(token: string): Promise<TokenClaims> {
   return payload as TokenClaims;
 }
 
+// Cleanup expired revoked tokens periodically (every hour)
+setInterval(() => {
+  cleanupExpiredTokens().catch(() => {});
+}, 60 * 60 * 1000);
+
 export async function login(req: LoginRequest, storeId: number): Promise<LoginResponse> {
-  const admin = await findAdminByEmail(req.email);
+  const admin = await findAdminByEmail(req.email, storeId);
   if (!admin) {
     throw new Error("Invalid credentials");
   }
   if (!admin.is_active) {
     throw new Error("Account is inactive");
-  }
-  if (admin.store_id !== storeId) {
-    throw new Error("Invalid credentials");
   }
 
   const valid = await Bun.password.verify(req.password, admin.password_hash);
@@ -58,10 +62,20 @@ export async function login(req: LoginRequest, storeId: number): Promise<LoginRe
   };
 }
 
-export async function refresh(refreshToken: string): Promise<RefreshResponse> {
+export async function refresh(refreshToken: string, storeId: number): Promise<RefreshResponse> {
   const claims = await verifyToken(refreshToken);
   if (claims.type !== "refresh") {
     throw new Error("Invalid token type");
+  }
+
+  // Cross-tenant validation
+  if (claims.store_id !== storeId) {
+    throw new Error("Invalid credentials");
+  }
+
+  // Check if token has been revoked
+  if (claims.jti && (await isTokenRevoked(claims.jti))) {
+    throw new Error("Token has been revoked");
   }
 
   const admin = await findAdminByID(claims.admin_id);
@@ -69,10 +83,26 @@ export async function refresh(refreshToken: string): Promise<RefreshResponse> {
     throw new Error("Admin not found or inactive");
   }
 
+  // Revoke the old refresh token (rotation)
+  if (claims.jti && claims.exp) {
+    await revokeToken(claims.jti, claims.admin_id, new Date(claims.exp * 1000));
+  }
+
   const newAccess = await generateToken(admin.id, admin.store_id, admin.email, "access", "15m");
   const newRefresh = await generateToken(admin.id, admin.store_id, admin.email, "refresh", "7d");
 
   return { access_token: newAccess, refresh_token: newRefresh };
+}
+
+export async function logout(refreshToken: string): Promise<void> {
+  try {
+    const claims = await verifyToken(refreshToken);
+    if (claims.jti && claims.exp) {
+      await revokeToken(claims.jti, claims.admin_id, new Date(claims.exp * 1000));
+    }
+  } catch {
+    // Token already invalid or expired — that's fine for logout
+  }
 }
 
 export async function hashPassword(password: string): Promise<string> {

@@ -25,15 +25,6 @@ function applyCustomization(customization: StoreCustomization) {
   root.style.setProperty('--store-accent', customization.accent_color);
   root.style.setProperty('--store-primary-hover', darkenColor(customization.primary_color));
 
-  if (customization.custom_css) {
-    let styleTag = document.getElementById('store-custom-css');
-    if (!styleTag) {
-      styleTag = document.createElement('style');
-      styleTag.id = 'store-custom-css';
-      document.head.appendChild(styleTag);
-    }
-    styleTag.textContent = customization.custom_css;
-  }
 }
 
 export function StoreProvider({ children }: { children: ReactNode }) {

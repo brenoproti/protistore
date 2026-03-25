@@ -10,7 +10,6 @@ interface Admin {
 
 interface AuthContextType {
   admin: Admin | null;
-  accessToken: string | null;
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
@@ -19,107 +18,66 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'admin_access_token',
-  REFRESH_TOKEN: 'admin_refresh_token',
-  ADMIN: 'admin_info',
-} as const;
-
-function parseJwtExpiry(token: string): number | null {
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    return payload.exp ? payload.exp * 1000 : null;
-  } catch {
-    return null;
-  }
-}
-
-function isTokenExpired(token: string): boolean {
-  const expiry = parseJwtExpiry(token);
-  if (!expiry) return true;
-  // Consider token expired 30 seconds before actual expiry
-  return Date.now() >= expiry - 30_000;
-}
+const ADMIN_STORAGE_KEY = 'admin_info';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // On mount, restore session from localStorage and validate tokens
+  // On mount, check if we have a valid session (cookies are sent automatically)
   useEffect(() => {
-    try {
-      const storedAccessToken = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN);
-      const storedRefreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-      const storedAdmin = localStorage.getItem(STORAGE_KEYS.ADMIN);
+    const storedAdmin = localStorage.getItem(ADMIN_STORAGE_KEY);
+    if (!storedAdmin) {
+      setLoading(false);
+      return;
+    }
 
-      if (storedAccessToken && storedAdmin) {
-        // Check if access token is still valid
-        if (!isTokenExpired(storedAccessToken)) {
-          setAccessToken(storedAccessToken);
-          setAdmin(JSON.parse(storedAdmin));
-          // Validate token against current store (backend will 401 if mismatch)
-          adminStoreApi.getStore().catch(() => {
+    // Validate session by calling a protected endpoint — cookies are sent automatically
+    adminStoreApi.getStore()
+      .then(() => {
+        setAdmin(JSON.parse(storedAdmin));
+      })
+      .catch(() => {
+        // Token expired or invalid — try refresh (cookie sent automatically)
+        authApi.refresh()
+          .then((data: LoginResponse) => {
+            localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data.admin));
+            setAdmin(data.admin);
+          })
+          .catch(() => {
             clearSession();
             if (window.location.pathname.startsWith('/admin')) {
               window.location.href = '/admin/login';
             }
           });
-        } else if (storedRefreshToken && !isTokenExpired(storedRefreshToken)) {
-          // Access token expired but refresh token is valid -- attempt refresh
-          authApi.refresh(storedRefreshToken)
-            .then((data: LoginResponse) => {
-              persistSession(data);
-              setAccessToken(data.access_token);
-              setAdmin(data.admin);
-            })
-            .catch(() => {
-              clearSession();
-              if (window.location.pathname.startsWith('/admin')) {
-                window.location.href = '/admin/login';
-              }
-            });
-        } else {
-          // Both tokens expired
-          clearSession();
-        }
-      }
-    } catch {
-      clearSession();
-    } finally {
-      setLoading(false);
-    }
+      })
+      .finally(() => setLoading(false));
   }, []);
 
-  function persistSession(data: LoginResponse) {
-    localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, data.access_token);
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, data.refresh_token);
-    localStorage.setItem(STORAGE_KEYS.ADMIN, JSON.stringify(data.admin));
-  }
-
   function clearSession() {
-    localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.ADMIN);
-    setAccessToken(null);
+    localStorage.removeItem(ADMIN_STORAGE_KEY);
+    // Also clear legacy tokens if present
+    localStorage.removeItem('admin_access_token');
+    localStorage.removeItem('admin_refresh_token');
     setAdmin(null);
   }
 
   const login = useCallback(async (email: string, password: string) => {
     const data: LoginResponse = await authApi.login(email, password);
-    persistSession(data);
-    setAccessToken(data.access_token);
+    // Cookies are set by the server; only store non-sensitive admin info locally
+    localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data.admin));
     setAdmin(data.admin);
   }, []);
 
   const logout = useCallback(() => {
+    authApi.logout().catch(() => {});
     clearSession();
   }, []);
 
-  const isAuthenticated = !!accessToken && !!admin;
+  const isAuthenticated = !!admin;
 
   return (
-    <AuthContext.Provider value={{ admin, accessToken, isAuthenticated, loading, login, logout }}>
+    <AuthContext.Provider value={{ admin, isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
