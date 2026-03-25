@@ -8,7 +8,7 @@ function requireEnv(name: string, fallback?: string): string {
 
 export const config = {
   dbHost: process.env.DB_HOST || "localhost",
-  dbPort: parseInt(process.env.DB_PORT || "3308"),
+  dbPort: parseInt(process.env.DB_PORT || "3306"),
   dbUser: requireEnv("DB_USER", process.env.NODE_ENV === "production" ? undefined : "vibestore"),
   dbPass: requireEnv("DB_PASS", process.env.NODE_ENV === "production" ? undefined : "vibestore123"),
   dbName: process.env.DB_NAME || "vibestore",
@@ -20,6 +20,11 @@ export const config = {
   s3AccessKey: process.env.S3_ACCESS_KEY || "",
   s3SecretKey: process.env.S3_SECRET_KEY || "",
   s3Endpoint: process.env.S3_ENDPOINT || "",
+
+  // CORS — comma-separated domains (e.g. "protistore.com,localhost")
+  corsDomains: process.env.CORS_DOMAINS || "localhost",
+  // Cookie domain — set to ".protistore.com" for subdomain sharing in production
+  cookieDomain: process.env.COOKIE_DOMAIN || "",
 
   // Email (SMTP) — leave SMTP_HOST empty to disable email
   smtpHost: process.env.SMTP_HOST || "",

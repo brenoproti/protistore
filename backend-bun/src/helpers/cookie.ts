@@ -1,3 +1,5 @@
+import { config } from "../config";
+
 const IS_PROD = process.env.NODE_ENV === "production";
 
 interface CookieOptions {
@@ -7,7 +9,7 @@ interface CookieOptions {
   path?: string;
 }
 
-export function buildSetCookie({ name, value, maxAge, path = "/" }: CookieOptions): string {
+function buildCookieParts(name: string, value: string, maxAge: number, path = "/"): string[] {
   const parts = [
     `${name}=${value}`,
     `Path=${path}`,
@@ -15,20 +17,17 @@ export function buildSetCookie({ name, value, maxAge, path = "/" }: CookieOption
     "HttpOnly",
     "SameSite=Lax",
   ];
+  if (config.cookieDomain) parts.push(`Domain=${config.cookieDomain}`);
   if (IS_PROD) parts.push("Secure");
-  return parts.join("; ");
+  return parts;
+}
+
+export function buildSetCookie({ name, value, maxAge, path = "/" }: CookieOptions): string {
+  return buildCookieParts(name, value, maxAge, path).join("; ");
 }
 
 export function buildClearCookie(name: string, path = "/"): string {
-  const parts = [
-    `${name}=`,
-    `Path=${path}`,
-    "Max-Age=0",
-    "HttpOnly",
-    "SameSite=Lax",
-  ];
-  if (IS_PROD) parts.push("Secure");
-  return parts.join("; ");
+  return buildCookieParts(name, "", 0, path).join("; ");
 }
 
 export function parseCookies(header: string | null): Record<string, string> {

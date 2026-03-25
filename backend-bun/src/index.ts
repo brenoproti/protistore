@@ -76,7 +76,9 @@ async function main() {
     })
     .use(
       cors({
-        origin: /^https?:\/\/([a-z0-9-]+\.)?(localhost|protistore\.com)(:\d+)?$/,
+        origin: new RegExp(
+          `^https?://([a-z0-9-]+\\.)?(${config.corsDomains.split(",").map(d => d.trim().replace(/\./g, "\\.")).join("|")})(:\\d+)?$`
+        ),
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         allowedHeaders: ["Accept", "Authorization", "Content-Type", "X-Store-Slug"],
         exposeHeaders: ["Link"],
@@ -84,8 +86,16 @@ async function main() {
         maxAge: 300,
       })
     )
-    // Health check
-    .get("/health", () => ({ status: "ok" }))
+    // Health check (includes DB connectivity)
+    .get("/health", async ({ set }) => {
+      try {
+        await getPool().query("SELECT 1");
+        return { status: "ok" };
+      } catch {
+        set.status = 503;
+        return { status: "error", message: "Database unavailable" };
+      }
+    })
     // Static files
     .get("/uploads/*", async ({ params, set }) => {
       const requestedPath = (params as Record<string, string>)["*"];
@@ -126,7 +136,18 @@ async function main() {
     .use(presignRoutes)
     .listen(config.serverPort);
 
-  logger.info(`Server running at http://localhost:${config.serverPort}`);
+  logger.info(`Server running on port ${config.serverPort}`);
+
+  // Graceful shutdown
+  const shutdown = async () => {
+    logger.info("Shutting down...");
+    try {
+      await getPool().end();
+    } catch { /* ignore */ }
+    process.exit(0);
+  };
+  process.on("SIGTERM", shutdown);
+  process.on("SIGINT", shutdown);
 }
 
 main().catch((err) => {
