@@ -1,0 +1,110 @@
+import { Elysia } from "elysia";
+import cors from "@elysiajs/cors";
+import { config } from "./config";
+import { getPool, runMigrations } from "./db";
+import { logger } from "./logger";
+// Routes
+import { authRoutes } from "./routes/auth";
+import { publicStoreRoutes, storeRoutes, adminStoreRoutes } from "./routes/store";
+import { publicCategoryRoutes, adminCategoryRoutes } from "./routes/category";
+import { publicBrandRoutes, adminBrandRoutes } from "./routes/brand";
+import { publicProductRoutes, adminProductRoutes } from "./routes/product";
+import { publicBannerRoutes, adminBannerRoutes } from "./routes/banner";
+import { publicOrderRoutes, adminOrderRoutes } from "./routes/order";
+import { dashboardRoutes } from "./routes/dashboard";
+import { uploadRoutes } from "./routes/upload";
+import { presignRoutes } from "./routes/presign";
+import { importRoutes } from "./routes/import";
+
+async function main() {
+  logger.info("=== ProtiStore Backend (Bun + Elysia) ===");
+  logger.info(`Connecting to MySQL at ${config.dbHost}:${config.dbPort}...`);
+
+  // Test connection
+  const pool = getPool();
+  await pool.query("SELECT 1");
+  logger.info("Connected to MySQL successfully.");
+
+  // Run migrations
+  logger.info("Running migrations...");
+  await runMigrations();
+  logger.info("All migrations applied.");
+
+  const app = new Elysia()
+    .onRequest(({ request }) => {
+      (request as any).__start = Date.now();
+    })
+    .onAfterResponse(({ request, set }) => {
+      const ms = Date.now() - ((request as any).__start || Date.now());
+      const status = set.status || 200;
+      const method = request.method;
+      const url = new URL(request.url).pathname;
+
+      // Skip noisy requests
+      if (url === "/health" || url.startsWith("/uploads")) return;
+
+      const level = status >= 500 ? "error" : status >= 400 ? "warn" : "info";
+      logger[level]({ method, url, status, ms }, `${method} ${url}`);
+    })
+    .onError(({ code, error, set }) => {
+      if (code === "NOT_FOUND") {
+        set.status = 404;
+        return { code: "NOT_FOUND", message: "Route not found" };
+      }
+      logger.error(error, "Unhandled error");
+      set.status = 500;
+      return { code: "INTERNAL_ERROR", message: "Internal server error" };
+    })
+    .use(
+      cors({
+        origin: /^https?:\/\/.*\.(localhost|protistore\.com)(:\d+)?$/,
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allowedHeaders: ["Accept", "Authorization", "Content-Type", "X-Store-Slug"],
+        exposeHeaders: ["Link"],
+        credentials: true,
+        maxAge: 300,
+      })
+    )
+    // Health check
+    .get("/health", () => ({ status: "ok" }))
+    // Static files
+    .get("/uploads/*", async ({ params, set }) => {
+      const filePath = `${config.uploadDir}/${(params as Record<string, string>)["*"]}`;
+      const file = Bun.file(filePath);
+      if (await file.exists()) {
+        return file;
+      }
+      set.status = 404;
+      return { code: "NOT_FOUND", message: "File not found" };
+    })
+    // Public routes (no tenant)
+    .use(publicStoreRoutes)
+    // Auth routes (tenant only)
+    .use(authRoutes)
+    // Public tenant routes
+    .use(storeRoutes)
+    .use(publicCategoryRoutes)
+    .use(publicBrandRoutes)
+    .use(publicProductRoutes)
+    .use(publicBannerRoutes)
+    .use(publicOrderRoutes)
+    // Admin routes (tenant + auth) - import/export BEFORE :id routes
+    .use(importRoutes)
+    .use(adminStoreRoutes)
+    .use(adminCategoryRoutes)
+    .use(adminBrandRoutes)
+    .use(adminProductRoutes)
+    .use(adminBannerRoutes)
+    .use(adminOrderRoutes)
+    .use(dashboardRoutes)
+    .use(uploadRoutes)
+    .use(presignRoutes)
+    .listen(config.serverPort);
+
+  logger.info(`Server running at http://localhost:${config.serverPort}`);
+}
+
+main().catch((err) => {
+  logger.fatal(err, "Failed to start server");
+  process.exit(1);
+});

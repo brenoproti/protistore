@@ -15,14 +15,9 @@ export interface StoreCustomization {
   id: number;
   store_id: number;
   primary_color: string;
-  secondary_color: string;
   accent_color: string;
-  background_color: string;
-  text_color: string;
   header_bg_color: string;
   footer_bg_color: string;
-  font_family: string;
-  border_radius: string;
   custom_css: string | null;
 }
 

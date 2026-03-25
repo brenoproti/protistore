@@ -21,7 +21,7 @@ import type {
  * Check whether the current hostname contains a store subdomain.
  *
  * A bare hostname like "localhost" or "example.com" means no store subdomain.
- * A subdomain like "vibestore.localhost" or "myshop.example.com" means there is one.
+ * A subdomain like "protistore.localhost" or "myshop.example.com" means there is one.
  */
 export function hasStoreSubdomain(): boolean {
   const hostname = window.location.hostname;
@@ -32,7 +32,7 @@ export function hasStoreSubdomain(): boolean {
 /**
  * Derive the store slug from the current hostname.
  *
- * Returns the subdomain portion (e.g. "vibestore" from "vibestore.localhost"),
+ * Returns the subdomain portion (e.g. "protistore" from "protistore.localhost"),
  * or `null` when there is no subdomain.
  */
 function getStoreSlug(): string | null {

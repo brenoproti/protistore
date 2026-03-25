@@ -72,7 +72,7 @@ export function LoginPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary">
             <Store size={28} className="text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">VibeStore</h1>
+          <h1 className="text-2xl font-bold text-gray-900">ProtiStore</h1>
           <p className="mt-1 text-sm text-muted-foreground">Entre no painel administrativo</p>
         </div>
 

@@ -1,6 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import { useEffect } from 'react';
 
 import { hasStoreSubdomain } from '@/lib/api';
 import { CartProvider } from '@/contexts/CartContext';
@@ -45,10 +46,19 @@ const queryClient = new QueryClient({
 
 const isStorefront = hasStoreSubdomain();
 
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [pathname]);
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ScrollToTop />
         <Toaster position="top-right" richColors closeButton />
         <Routes>
           {isStorefront ? (

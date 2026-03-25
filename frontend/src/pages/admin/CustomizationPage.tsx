@@ -4,7 +4,6 @@ import { Loader2, Palette, ShoppingCart, Search } from 'lucide-react';
 import { adminStoreApi } from '@/lib/api';
 import type { StoreCustomization } from '@/types';
 import { toast } from 'sonner';
-import { Select } from '@/components/ui/Select';
 
 function isDark(hex: string): boolean {
   const c = hex.replace('#', '');
@@ -17,10 +16,7 @@ function isDark(hex: string): boolean {
 
 const COLOR_FIELDS: { key: keyof StoreCustomization; label: string }[] = [
   { key: 'primary_color', label: 'Cor Primária' },
-  { key: 'secondary_color', label: 'Cor Secundária' },
   { key: 'accent_color', label: 'Cor de Destaque' },
-  { key: 'background_color', label: 'Cor de Fundo' },
-  { key: 'text_color', label: 'Cor do Texto' },
   { key: 'header_bg_color', label: 'Fundo do Cabeçalho' },
   { key: 'footer_bg_color', label: 'Fundo do Rodapé' },
 ];
@@ -28,12 +24,11 @@ const COLOR_FIELDS: { key: keyof StoreCustomization; label: string }[] = [
 function PreviewMiniStore({ form }: { form: Partial<StoreCustomization> }) {
   const primary = (form.primary_color as string) || '#6366f1';
   const accent = (form.accent_color as string) || '#f59e0b';
-  const bg = (form.background_color as string) || '#ffffff';
-  const text = (form.text_color as string) || '#1f2937';
+  const bg = '#ffffff';
+  const text = '#1f2937';
   const headerBg = (form.header_bg_color as string) || '#ffffff';
   const footerBg = (form.footer_bg_color as string) || '#1f2937';
-  const font = form.font_family || 'Inter';
-  const radius = form.border_radius || '8px';
+  const radius = '8px';
 
   const headerText = isDark(headerBg) ? '#ffffff' : '#1f2937';
   const footerText = isDark(footerBg) ? '#ffffff' : '#1f2937';
@@ -42,7 +37,7 @@ function PreviewMiniStore({ form }: { form: Partial<StoreCustomization> }) {
   return (
     <div
       className="overflow-hidden rounded-lg border shadow-sm"
-      style={{ fontFamily: font, fontSize: 10, lineHeight: 1.4 }}
+      style={{ fontSize: 10, lineHeight: 1.4 }}
     >
       {/* Header */}
       <div
@@ -200,43 +195,6 @@ export function CustomizationPage() {
               </div>
             </div>
 
-            {/* Typography & Shape */}
-            <div className="rounded-lg border p-6">
-              <h2 className="mb-4 font-semibold">Tipografia e Forma</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Fonte</label>
-                  <Select
-                    value={form.font_family || 'Inter'}
-                    onChange={v => updateField('font_family', v)}
-                    options={[
-                      { value: 'Inter', label: 'Inter' },
-                      { value: 'Roboto', label: 'Roboto' },
-                      { value: 'Open Sans', label: 'Open Sans' },
-                      { value: 'Poppins', label: 'Poppins' },
-                      { value: 'Lato', label: 'Lato' },
-                      { value: 'Montserrat', label: 'Montserrat' },
-                      { value: 'Playfair Display', label: 'Playfair Display' },
-                    ]}
-                  />
-                </div>
-                <div>
-                  <label className="mb-1 block text-sm font-medium">Arredondamento</label>
-                  <Select
-                    value={form.border_radius || '8px'}
-                    onChange={v => updateField('border_radius', v)}
-                    options={[
-                      { value: '0px', label: 'Quadrado (0px)' },
-                      { value: '4px', label: 'Sutil (4px)' },
-                      { value: '8px', label: 'Médio (8px)' },
-                      { value: '12px', label: 'Grande (12px)' },
-                      { value: '16px', label: 'Extra Grande (16px)' },
-                      { value: '9999px', label: 'Totalmente Redondo' },
-                    ]}
-                  />
-                </div>
-              </div>
-            </div>
 
             {/* Custom CSS */}
             <div className="rounded-lg border p-6">

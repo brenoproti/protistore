@@ -105,7 +105,7 @@ export function CheckoutPage() {
       });
       clearCart();
       toast.success('Pedido realizado com sucesso!');
-      navigate(`/order-confirmation?order=${order.order_number}`);
+      navigate(`/order-confirmation?order=${order.order_number}`, { state: { order } });
     } catch {
       toast.error('Falha ao realizar o pedido. Tente novamente.');
     } finally {

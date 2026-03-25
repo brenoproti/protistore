@@ -22,15 +22,8 @@ function darkenColor(hex: string, amount = 15): string {
 function applyCustomization(customization: StoreCustomization) {
   const root = document.documentElement;
   root.style.setProperty('--store-primary', customization.primary_color);
-  root.style.setProperty('--store-secondary', customization.secondary_color);
   root.style.setProperty('--store-accent', customization.accent_color);
-  root.style.setProperty('--store-background', customization.background_color);
-  root.style.setProperty('--store-text', customization.text_color);
-  root.style.setProperty('--store-font', customization.font_family);
-  root.style.setProperty('--store-radius', customization.border_radius);
   root.style.setProperty('--store-primary-hover', darkenColor(customization.primary_color));
-  root.style.setProperty('--store-header-bg', customization.header_bg_color);
-  root.style.setProperty('--store-footer-bg', customization.footer_bg_color);
 
   if (customization.custom_css) {
     let styleTag = document.getElementById('store-custom-css');
@@ -104,14 +97,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Falha ao carregar loja</h1>
-          <p className="text-gray-600">{error}</p>
-        </div>
-      </div>
-    );
+    const { protocol, hostname, port } = window.location;
+    const parts = hostname.split('.');
+    const rootHostname = parts[parts.length - 1] === 'localhost'
+      ? 'localhost'
+      : parts.slice(1).join('.');
+    const portSuffix = port ? `:${port}` : '';
+    window.location.replace(`${protocol}//${rootHostname}${portSuffix}`);
+    return null;
   }
 
   return (

@@ -11,14 +11,13 @@ import {
   Clock,
   ClipboardCheck,
   Loader2,
+  MessageCircle,
 } from 'lucide-react';
 import { adminOrderApi } from '@/lib/api';
 import type { Order } from '@/types';
 import { Select } from '@/components/ui/Select';
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+import { formatCurrency, formatDate } from '@/lib/formatters';
+import { STATUS_LABELS, STATUS_COLORS, PAYMENT_LABELS } from '@/lib/order-constants';
 
 const ALL_STATUSES = [
   'pending',
@@ -31,15 +30,6 @@ const ALL_STATUSES = [
 
 type OrderStatus = (typeof ALL_STATUSES)[number];
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  processing: 'bg-indigo-100 text-indigo-800',
-  shipped: 'bg-purple-100 text-purple-800',
-  delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
-};
-
 const STATUS_ICON: Record<string, React.ReactNode> = {
   pending: <Clock size={18} />,
   confirmed: <ClipboardCheck size={18} />,
@@ -48,36 +38,6 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
   delivered: <CheckCircle2 size={18} />,
   cancelled: <XCircle size={18} />,
 };
-
-const STATUS_LABELS: Record<string, string> = {
-  pending: 'Pendente',
-  confirmed: 'Confirmado',
-  processing: 'Processando',
-  shipped: 'Enviado',
-  delivered: 'Entregue',
-  cancelled: 'Cancelado',
-};
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-  }).format(value);
-}
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString('pt-BR', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
 
 // ---------------------------------------------------------------------------
 // Skeleton
@@ -312,7 +272,20 @@ export function OrderDetailPage() {
               {order.customer_phone && (
                 <div>
                   <dt className="text-muted-foreground">Telefone</dt>
-                  <dd className="font-medium">{order.customer_phone}</dd>
+                  <dd className="font-medium flex items-center gap-2">
+                    {order.customer_phone}
+                    <a
+                      href={`https://wa.me/${order.customer_phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Olá ${order.customer_name.split(' ')[0]}! Sobre seu pedido ${order.order_number}:`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md transition-colors"
+                      style={{ backgroundColor: '#dcfce7', color: '#15803d' }}
+                      title="Abrir WhatsApp"
+                    >
+                      <MessageCircle size={13} />
+                      WhatsApp
+                    </a>
+                  </dd>
                 </div>
               )}
             </dl>
@@ -343,7 +316,7 @@ export function OrderDetailPage() {
                 <div>
                   <dt className="text-muted-foreground">Forma de Pagamento</dt>
                   <dd className="font-medium">
-                    {{ credit_card: 'Cartão de Crédito', debit_card: 'Cartão de Débito', cash: 'Dinheiro', pix: 'PIX' }[order.payment_method] || order.payment_method}
+                    {PAYMENT_LABELS[order.payment_method] || order.payment_method}
                   </dd>
                 </div>
               )}

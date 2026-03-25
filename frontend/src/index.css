@@ -3,10 +3,10 @@
 @theme {
   --color-primary: var(--store-primary, #6366f1);
   --color-primary-hover: var(--store-primary-hover, #4f46e5);
-  --color-secondary: var(--store-secondary, #4f46e5);
+  --color-secondary: #4f46e5;
   --color-accent: var(--store-accent, #f59e0b);
-  --color-background: var(--store-background, #ffffff);
-  --color-foreground: var(--store-text, #1f2937);
+  --color-background: #ffffff;
+  --color-foreground: #1f2937;
   --color-muted: #f3f4f6;
   --color-muted-foreground: #6b7280;
   --color-border: #e5e7eb;
@@ -15,8 +15,8 @@
   --color-warning: #f59e0b;
   --color-card: #ffffff;
   --color-card-foreground: #1f2937;
-  --font-family-sans: var(--store-font, 'Inter'), system-ui, sans-serif;
-  --radius: var(--store-radius, 8px);
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+  --radius: 8px;
 }
 
 @layer base {
@@ -34,6 +34,7 @@
 }
 
 @layer components {
+  /* ---- Buttons ---- */
   .btn {
     display: inline-flex;
     align-items: center;
@@ -43,21 +44,36 @@
     font-weight: 500;
     font-size: 0.875rem;
     line-height: 1.25rem;
-    transition: all 150ms ease;
+    transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     border: none;
     outline: none;
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    position: relative;
+    overflow: hidden;
+    gap: 0.375rem;
   }
   .btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
+  .btn:active:not(:disabled) {
+    transform: scale(0.97);
+  }
   .btn-primary {
     background-color: var(--color-primary);
     color: white;
+    box-shadow: 0 1px 3px 0 color-mix(in srgb, var(--color-primary) 30%, transparent),
+                0 1px 2px -1px color-mix(in srgb, var(--color-primary) 20%, transparent);
   }
   .btn-primary:hover:not(:disabled) {
     background-color: var(--color-primary-hover);
+    box-shadow: 0 4px 12px 0 color-mix(in srgb, var(--color-primary) 35%, transparent),
+                0 2px 4px -2px color-mix(in srgb, var(--color-primary) 25%, transparent);
+    transform: translateY(-1px);
   }
   .btn-secondary {
     background-color: var(--color-muted);
@@ -73,6 +89,7 @@
   }
   .btn-outline:hover:not(:disabled) {
     background-color: var(--color-muted);
+    border-color: var(--color-muted-foreground);
   }
   .btn-destructive {
     background-color: var(--color-destructive);
@@ -102,6 +119,7 @@
     height: 2.25rem;
   }
 
+  /* ---- Inputs ---- */
   .input {
     display: block;
     width: 100%;
@@ -113,41 +131,67 @@
     background-color: var(--color-card);
     color: var(--color-foreground);
     outline: none;
-    transition: border-color 150ms ease, box-shadow 150ms ease;
+    transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
   }
-  .input:focus {
+  .input:hover:not(:focus) {
+    border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-foreground));
+  }
+  .input:focus, .input:focus-visible {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    outline: none;
   }
   .input::placeholder {
     color: var(--color-muted-foreground);
   }
 
+  /* ---- Cards ---- */
   .card {
     background-color: var(--color-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    overflow: hidden;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-hover:hover {
+    box-shadow: 0 12px 32px -8px rgba(0,0,0,0.12), 0 4px 8px -4px rgba(0,0,0,0.06);
+    transform: translateY(-4px);
   }
 
+  /* ---- Badges ---- */
   .badge {
     display: inline-flex;
     align-items: center;
     padding: 0.125rem 0.625rem;
     border-radius: 9999px;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.25rem;
+    letter-spacing: 0.01em;
   }
 
+  /* ---- Skeletons ---- */
   .skeleton {
-    background: linear-gradient(90deg, var(--color-muted) 25%, var(--color-border) 50%, var(--color-muted) 75%);
+    background: linear-gradient(
+      100deg,
+      var(--color-muted) 30%,
+      color-mix(in srgb, var(--color-muted) 60%, white) 50%,
+      var(--color-muted) 70%
+    );
     background-size: 200% 100%;
-    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    animation: skeleton-shimmer 1.8s ease-in-out infinite;
     border-radius: var(--radius);
+  }
+
+  /* ---- Glass panel ---- */
+  .glass {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 }
 
+/* ---- Animations ---- */
 @keyframes skeleton-shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -159,10 +203,47 @@
 }
 
 @keyframes slide-in-from-top-1 {
-  from { transform: translateY(-4px); }
-  to { transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
 }
 
 .animate-in {
-  animation: fade-in 150ms ease-out, slide-in-from-top-1 150ms ease-out;
+  animation: fade-in 200ms ease-out, slide-in-from-top-1 200ms ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 400ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scale-in 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ---- Reduced motion ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

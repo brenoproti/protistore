@@ -90,7 +90,7 @@ export function AdminLayout() {
         <div className="flex h-16 items-center justify-between border-b border-white/10 px-4">
           <div className="flex items-center gap-2">
             <Store size={24} className="text-primary" />
-            <span className="text-lg font-bold tracking-tight">VibeStore</span>
+            <span className="text-lg font-bold tracking-tight">ProtiStore</span>
           </div>
           <button
             className="rounded p-1 hover:bg-white/10 lg:hidden"
