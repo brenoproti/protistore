@@ -51,9 +51,9 @@ async function main() {
   console.log("\n--- Creating store customization ---");
   await pool.query(
     `INSERT INTO store_customizations
-     (store_id, primary_color, accent_color, header_bg_color, footer_bg_color)
-     VALUES (?, ?, ?, ?, ?)`,
-    [storeId, "#6366f1", "#f59e0b", "#ffffff", "#1f2937"]
+     (store_id, primary_color, header_bg_color, footer_bg_color)
+     VALUES (?, ?, ?, ?)`,
+    [storeId, "#6366f1", "#ffffff", "#1f2937"]
   );
   console.log("  Store customization created.");
 

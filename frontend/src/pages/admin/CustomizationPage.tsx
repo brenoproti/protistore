@@ -16,14 +16,12 @@ function isDark(hex: string): boolean {
 
 const COLOR_FIELDS: { key: keyof StoreCustomization; label: string }[] = [
   { key: 'primary_color', label: 'Cor Primária' },
-  { key: 'accent_color', label: 'Cor de Destaque' },
   { key: 'header_bg_color', label: 'Fundo do Cabeçalho' },
   { key: 'footer_bg_color', label: 'Fundo do Rodapé' },
 ];
 
 function PreviewMiniStore({ form }: { form: Partial<StoreCustomization> }) {
   const primary = (form.primary_color as string) || '#6366f1';
-  const accent = (form.accent_color as string) || '#f59e0b';
   const bg = '#ffffff';
   const text = '#1f2937';
   const headerBg = (form.header_bg_color as string) || '#ffffff';
@@ -82,7 +80,7 @@ function PreviewMiniStore({ form }: { form: Partial<StoreCustomization> }) {
                   {p.badge && (
                     <span
                       className="absolute top-1 left-1 px-1 rounded font-bold"
-                      style={{ fontSize: 7, backgroundColor: accent, color: isDark(accent) ? '#fff' : '#1f2937' }}
+                      style={{ fontSize: 7, backgroundColor: '#f59e0b', color: '#1f2937' }}
                     >
                       OFERTA
                     </span>

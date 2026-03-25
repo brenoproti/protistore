@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS store_customizations (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     store_id BIGINT UNSIGNED NOT NULL UNIQUE,
     primary_color VARCHAR(7) NOT NULL DEFAULT '#6366f1',
-    accent_color VARCHAR(7) NOT NULL DEFAULT '#f59e0b',
     header_bg_color VARCHAR(7) NOT NULL DEFAULT '#ffffff',
     footer_bg_color VARCHAR(7) NOT NULL DEFAULT '#1f2937',
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

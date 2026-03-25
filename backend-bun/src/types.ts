@@ -17,7 +17,6 @@ export interface StoreCustomization {
   id: number;
   store_id: number;
   primary_color: string;
-  accent_color: string;
   header_bg_color: string;
   footer_bg_color: string;
   created_at: string;
@@ -174,7 +173,6 @@ export interface UpdateStoreRequest {
 
 export interface UpdateCustomizationRequest {
   primary_color: string;
-  accent_color: string;
   header_bg_color: string;
   footer_bg_color: string;
 }

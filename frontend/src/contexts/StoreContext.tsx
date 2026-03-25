@@ -22,7 +22,6 @@ function darkenColor(hex: string, amount = 15): string {
 function applyCustomization(customization: StoreCustomization) {
   const root = document.documentElement;
   root.style.setProperty('--store-primary', customization.primary_color);
-  root.style.setProperty('--store-accent', customization.accent_color);
   root.style.setProperty('--store-primary-hover', darkenColor(customization.primary_color));
 
 }
