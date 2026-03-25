@@ -26,7 +26,12 @@ import type {
 export function hasStoreSubdomain(): boolean {
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
-  return parts.length > 1 && parts[0] !== 'www';
+  // localhost: "myshop.localhost" → 2 parts = subdomain
+  // production: "myshop.protistore.com" → 3 parts = subdomain
+  //             "protistore.com" → 2 parts = no subdomain
+  const isLocalhost = parts[parts.length - 1] === 'localhost';
+  const minParts = isLocalhost ? 2 : 3;
+  return parts.length >= minParts && parts[0] !== 'www';
 }
 
 /**
@@ -38,8 +43,10 @@ export function hasStoreSubdomain(): boolean {
 function getStoreSlug(): string | null {
   const hostname = window.location.hostname;
   const parts = hostname.split('.');
+  const isLocalhost = parts[parts.length - 1] === 'localhost';
+  const minParts = isLocalhost ? 2 : 3;
 
-  if (parts.length > 1 && parts[0] !== 'www') {
+  if (parts.length >= minParts && parts[0] !== 'www') {
     return parts[0];
   }
 
