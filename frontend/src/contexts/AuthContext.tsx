@@ -25,6 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   // On mount, check if we have a valid session (cookies are sent automatically)
+  // The Axios interceptor handles 401 → refresh automatically, so we just need to
+  // call a protected endpoint. If both access + refresh are invalid, it will fail.
   useEffect(() => {
     const storedAdmin = localStorage.getItem(ADMIN_STORAGE_KEY);
     if (!storedAdmin) {
@@ -32,24 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Validate session by calling a protected endpoint — cookies are sent automatically
     adminStoreApi.getStore()
       .then(() => {
         setAdmin(JSON.parse(storedAdmin));
       })
       .catch(() => {
-        // Token expired or invalid — try refresh (cookie sent automatically)
-        authApi.refresh()
-          .then((data: LoginResponse) => {
-            localStorage.setItem(ADMIN_STORAGE_KEY, JSON.stringify(data.admin));
-            setAdmin(data.admin);
-          })
-          .catch(() => {
-            clearSession();
-            if (window.location.pathname.startsWith('/admin')) {
-              window.location.href = '/admin/login';
-            }
-          });
+        // Interceptor already tried refresh and failed — session is truly expired
+        clearSession();
       })
       .finally(() => setLoading(false));
   }, []);
