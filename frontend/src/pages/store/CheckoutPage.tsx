@@ -328,7 +328,7 @@ export function CheckoutPage() {
                 <span className="text-muted-foreground">
                   Li e concordo com a{' '}
                   <Link to="/privacidade" target="_blank" className="text-primary underline hover:text-primary/80">
-                    Politica de Privacidade
+                    Política de Privacidade
                   </Link>
                 </span>
               </label>
