@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -18,6 +18,7 @@ const ORDER_STATUSES = [
   { label: 'Confirmado', value: 'confirmed' },
   { label: 'Processando', value: 'processing' },
   { label: 'Enviado', value: 'shipped' },
+  { label: 'Pronto para Retirada', value: 'ready_for_pickup' },
   { label: 'Entregue', value: 'delivered' },
   { label: 'Cancelado', value: 'cancelled' },
 ] as const;
@@ -184,6 +185,9 @@ export function OrdersPage() {
   const statusFilter = searchParams.get('status') || '';
   const page = Number(searchParams.get('page')) || 1;
 
+  // Local search input state (only applies on submit)
+  const [searchInput, setSearchInput] = useState(searchQuery);
+
   // ---- URL param updater ----
   const updateParams = useCallback(
     (updates: Record<string, string | null>) => {
@@ -202,8 +206,9 @@ export function OrdersPage() {
     [setSearchParams],
   );
 
-  const handleSearchChange = (value: string) => {
-    updateParams({ search: value || null, page: null });
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateParams({ search: searchInput || null, page: null });
   };
 
   const handleStatusChange = (value: string) => {
@@ -239,19 +244,24 @@ export function OrdersPage() {
       {/* ---- Top Bar ---- */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
         {/* Search */}
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder="Buscar pedidos..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="input pl-9"
-          />
-        </div>
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder="Buscar pedidos..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="input pl-9"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary shrink-0">
+            Buscar
+          </button>
+        </form>
 
         {/* Status Filter */}
         <Select
