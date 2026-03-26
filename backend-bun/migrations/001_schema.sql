@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS orders (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     store_id BIGINT UNSIGNED NOT NULL,
     order_number VARCHAR(50) NOT NULL,
-    status ENUM('pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
+    status ENUM('pending', 'confirmed', 'processing', 'shipped', 'ready_for_pickup', 'delivered', 'cancelled') NOT NULL DEFAULT 'pending',
     customer_name VARCHAR(255) NOT NULL,
     customer_email VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50),
