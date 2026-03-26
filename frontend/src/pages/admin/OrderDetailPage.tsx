@@ -203,7 +203,7 @@ export function OrderDetailPage() {
       queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] });
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
       setSelectedStatus('');
-      toast.success(`Status do pedido atualizado para "${updatedOrder.status}".`);
+      toast.success(`Status do pedido atualizado para "${STATUS_LABELS[updatedOrder.status] || updatedOrder.status}".`);
     },
     onError: () => {
       toast.error('Falha ao atualizar status do pedido. Tente novamente.');
