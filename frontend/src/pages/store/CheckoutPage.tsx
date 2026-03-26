@@ -20,8 +20,8 @@ const checkoutSchema = z.object({
   payment_method: z.enum(['credit_card', 'debit_card', 'cash', 'pix']).optional(),
   change_for: z.string().optional(),
   notes: z.string().optional(),
-  privacy_accepted: z.literal(true, {
-    errorMap: () => ({ message: 'Você precisa aceitar a Política de Privacidade para continuar' }),
+  privacy_accepted: z.boolean().refine((val) => val === true, {
+    message: 'Você precisa aceitar a Política de Privacidade para continuar',
   }),
 }).superRefine((data, ctx) => {
   if (data.delivery_method === 'delivery') {
