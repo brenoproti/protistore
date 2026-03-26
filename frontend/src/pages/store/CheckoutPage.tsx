@@ -118,7 +118,7 @@ export function CheckoutPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-8">
       <div className="mb-6">
         <Link to="/cart" className="btn btn-ghost btn-sm gap-1 mb-4">
           <ArrowLeft size={16} /> Voltar ao Carrinho
@@ -127,10 +127,10 @@ export function CheckoutPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-2">
             {/* Contact Info */}
-            <div className="rounded-lg border p-6">
+            <div className="rounded-lg border p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Informações de Contato</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
@@ -151,7 +151,7 @@ export function CheckoutPage() {
             </div>
 
             {/* Delivery Method */}
-            <div className="rounded-lg border p-6">
+            <div className="rounded-lg border p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Método de Entrega</h2>
               <div className="grid gap-3 sm:grid-cols-2">
                 <label
@@ -201,7 +201,7 @@ export function CheckoutPage() {
 
             {/* Shipping Address - only when delivery */}
             {deliveryMethod === 'delivery' && (
-              <div className="rounded-lg border p-6">
+              <div className="rounded-lg border p-4 sm:p-6">
                 <h2 className="mb-4 text-lg font-semibold">Endereço de Entrega</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="sm:col-span-2">
@@ -230,7 +230,7 @@ export function CheckoutPage() {
 
             {/* Payment Method - only for delivery */}
             {deliveryMethod === 'delivery' && (
-              <div className="rounded-lg border p-6">
+              <div className="rounded-lg border p-4 sm:p-6">
                 <h2 className="mb-4 text-lg font-semibold">Forma de Pagamento</h2>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {PAYMENT_OPTIONS.map(opt => {
@@ -279,7 +279,7 @@ export function CheckoutPage() {
             )}
 
             {/* Notes */}
-            <div className="rounded-lg border p-6">
+            <div className="rounded-lg border p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Observações</h2>
               <textarea {...register('notes')} className="input min-h-[80px] resize-y" placeholder="Alguma instrução especial..." />
             </div>
@@ -287,7 +287,7 @@ export function CheckoutPage() {
 
           {/* Order Summary Sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-lg border p-6">
+            <div className="sticky top-24 rounded-lg border p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Resumo do Pedido</h2>
               <div className="mb-4 max-h-64 space-y-3 overflow-y-auto">
                 {items.map(item => (
@@ -301,7 +301,7 @@ export function CheckoutPage() {
                       <p className="truncate text-sm font-medium">{item.name}</p>
                       <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                     </div>
-                    <span className="text-sm font-medium">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="shrink-0 text-sm font-medium">R$ {(item.price * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>

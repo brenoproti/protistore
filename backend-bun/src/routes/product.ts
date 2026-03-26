@@ -7,14 +7,20 @@ import type { ProductRequest, ProductListParams } from "../types";
 export const publicProductRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
   .get("/store/products", async ({ query, storeId }) => {
+    const brandIdsRaw = (query.brand_ids as string) || "";
+    const brandIds = brandIdsRaw
+      ? brandIdsRaw.split(",").map(Number).filter((n) => !Number.isNaN(n))
+      : undefined;
+
     const params: ProductListParams = {
       page: Number(query.page) || 1,
       per_page: Number(query.per_page) || 12,
       search: (query.search as string) || undefined,
       category_id: query.category_id ? Number(query.category_id) : undefined,
       brand_id: query.brand_id ? Number(query.brand_id) : undefined,
-      min_price: query.min_price ? Number(query.min_price) : undefined,
-      max_price: query.max_price ? Number(query.max_price) : undefined,
+      brand_ids: brandIds && brandIds.length > 0 ? brandIds : undefined,
+      min_price: query.min_price || query.price_min ? Number(query.min_price || query.price_min) : undefined,
+      max_price: query.max_price || query.price_max ? Number(query.max_price || query.price_max) : undefined,
       sort: (query.sort as string) || undefined,
       order: (query.order as string) || undefined,
       featured: query.featured ? query.featured === "true" : undefined,

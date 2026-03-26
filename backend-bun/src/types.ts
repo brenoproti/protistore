@@ -275,6 +275,7 @@ export interface ProductListParams {
   search?: string;
   category_id?: number;
   brand_id?: number;
+  brand_ids?: number[];
   min_price?: number;
   max_price?: number;
   sort?: string;

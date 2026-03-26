@@ -17,7 +17,10 @@ export async function findProductsByStoreID(
     where += " AND p.category_id = ?";
     args.push(params.category_id);
   }
-  if (params.brand_id) {
+  if (params.brand_ids && params.brand_ids.length > 0) {
+    where += ` AND p.brand_id IN (${params.brand_ids.map(() => "?").join(",")})`;
+    args.push(...params.brand_ids);
+  } else if (params.brand_id) {
     where += " AND p.brand_id = ?";
     args.push(params.brand_id);
   }
