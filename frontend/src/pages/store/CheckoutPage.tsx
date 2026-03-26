@@ -118,7 +118,7 @@ export function CheckoutPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl overflow-x-hidden px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="mb-6">
         <Link to="/cart" className="btn btn-ghost btn-sm gap-1 mb-4">
           <ArrowLeft size={16} /> Voltar ao Carrinho
