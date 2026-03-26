@@ -19,6 +19,38 @@ function darkenColor(hex: string, amount = 15): string {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 }
 
+function generateFavicon(letter: string, bgColor: string): string {
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d')!;
+
+  // Background
+  ctx.fillStyle = bgColor;
+  ctx.beginPath();
+  ctx.roundRect(0, 0, 64, 64, 12);
+  ctx.fill();
+
+  // Letter
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 36px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(letter.toUpperCase(), 32, 34);
+
+  return canvas.toDataURL('image/png');
+}
+
+function setFavicon(href: string) {
+  let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'icon';
+    document.head.appendChild(link);
+  }
+  link.href = href;
+}
+
 function applyCustomization(customization: StoreCustomization) {
   const root = document.documentElement;
   root.style.setProperty('--store-primary', customization.primary_color);
@@ -50,15 +82,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         // Set document title
         document.title = store.name;
 
-        // Set favicon if available
+        // Set favicon: use uploaded one or generate from store initial + primary color
         if (store.favicon_url) {
-          let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-          if (!link) {
-            link = document.createElement('link');
-            link.rel = 'icon';
-            document.head.appendChild(link);
-          }
-          link.href = store.favicon_url;
+          setFavicon(store.favicon_url);
+        } else {
+          const letter = store.name?.charAt(0) || 'L';
+          setFavicon(generateFavicon(letter, customization.primary_color));
         }
       } catch (err) {
         if (!cancelled) {
