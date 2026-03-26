@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   XCircle,
   ArrowLeft,
+  PackageCheck,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { storeApi } from '@/lib/api';
@@ -17,7 +18,7 @@ import { STATUS_LABELS, STATUS_COLORS } from '@/lib/order-constants';
 
 interface TrackingOrder {
   order_number: string;
-  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'ready_for_pickup' | 'delivered' | 'cancelled';
   delivery_method: 'pickup' | 'delivery';
   created_at: string;
   updated_at: string;
@@ -28,15 +29,19 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
   confirmed: <ClipboardCheck size={18} />,
   processing: <Package size={18} />,
   shipped: <Truck size={18} />,
+  ready_for_pickup: <PackageCheck size={18} />,
   delivered: <CheckCircle2 size={18} />,
   cancelled: <XCircle size={18} />,
 };
 
-type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'ready_for_pickup' | 'delivered' | 'cancelled';
 
-function StatusTimeline({ currentStatus }: { currentStatus: OrderStatus }) {
+function StatusTimeline({ currentStatus, deliveryMethod }: { currentStatus: OrderStatus; deliveryMethod: string }) {
   const isCancelled = currentStatus === 'cancelled';
-  const normalFlow: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+  const isPickup = deliveryMethod === 'pickup';
+  const normalFlow: OrderStatus[] = isPickup
+    ? ['pending', 'confirmed', 'processing', 'ready_for_pickup', 'delivered']
+    : ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
   const statuses = isCancelled ? (['pending', 'cancelled'] as OrderStatus[]) : normalFlow;
   const currentIndex = statuses.indexOf(currentStatus);
 
@@ -164,7 +169,7 @@ export function OrderTrackingPage() {
                 {STATUS_LABELS[order.status] || order.status}
               </span>
             </div>
-            <StatusTimeline currentStatus={order.status} />
+            <StatusTimeline currentStatus={order.status} deliveryMethod={order.delivery_method} />
             <div className="mt-5 flex items-center justify-center gap-4 text-xs text-muted-foreground">
               <span>Realizado em {formatDate(order.created_at)}</span>
               <span>·</span>

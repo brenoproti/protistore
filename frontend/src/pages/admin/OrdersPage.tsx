@@ -27,6 +27,7 @@ const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-blue-100 text-blue-800',
   processing: 'bg-indigo-100 text-indigo-800',
   shipped: 'bg-purple-100 text-purple-800',
+  ready_for_pickup: 'bg-purple-100 text-purple-800',
   delivered: 'bg-green-100 text-green-800',
   cancelled: 'bg-red-100 text-red-800',
 };
@@ -36,6 +37,7 @@ const STATUS_LABELS: Record<string, string> = {
   confirmed: 'Confirmado',
   processing: 'Processando',
   shipped: 'Enviado',
+  ready_for_pickup: 'Pronto para Retirada',
   delivered: 'Entregue',
   cancelled: 'Cancelado',
 };

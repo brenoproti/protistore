@@ -232,7 +232,7 @@ export const adminOrderRoutes = new Elysia({ prefix: "/api/v1/admin" })
   })
   .put("/orders/:id/status", async ({ params, body, storeId, set }) => {
     const req = body as UpdateOrderStatusRequest;
-    const validStatuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
+    const validStatuses = ["pending", "confirmed", "processing", "shipped", "ready_for_pickup", "delivered", "cancelled"];
     if (!validStatuses.includes(req.status)) {
       set.status = 400;
       return { code: "VALIDATION_ERROR", message: "Invalid status" };
@@ -247,8 +247,9 @@ export const adminOrderRoutes = new Elysia({ prefix: "/api/v1/admin" })
     await orderRepo.updateOrderStatus(order.id, storeId, req.status);
     const updated = await orderRepo.findOrderByID(order.id, storeId);
 
-    // Send status update email (fire-and-forget)
-    if (updated) {
+    // Send status update email only for statuses the customer cares about
+    const emailStatuses = ["shipped", "ready_for_pickup", "delivered", "cancelled"];
+    if (updated && emailStatuses.includes(req.status)) {
       const store = await storeRepo.findStoreByID(storeId);
       sendStatusUpdate(updated, store?.name ?? "ProtiStore").catch(() => {});
     }

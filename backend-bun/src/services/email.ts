@@ -107,18 +107,14 @@ function orderConfirmationHtml(order: Order, storeName: string): string {
 
 function statusUpdateHtml(order: Order, storeName: string): string {
   const statusLabels: Record<string, string> = {
-    pending: "Pendente",
-    confirmed: "Confirmado",
-    processing: "Em Processamento",
     shipped: "Enviado",
+    ready_for_pickup: "Pronto para Retirada",
     delivered: "Entregue",
     cancelled: "Cancelado",
   };
   const statusColors: Record<string, string> = {
-    pending: "#eab308",
-    confirmed: "#3b82f6",
-    processing: "#6366f1",
     shipped: "#8b5cf6",
+    ready_for_pickup: "#8b5cf6",
     delivered: "#22c55e",
     cancelled: "#ef4444",
   };
@@ -143,7 +139,7 @@ function statusUpdateHtml(order: Order, storeName: string): string {
           ${label}
         </div>
         <p style="margin:20px 0 0;font-size:14px;color:#64748b;">
-          ${order.status === "shipped" ? "Seu pedido está a caminho!" : order.status === "delivered" ? "Seu pedido foi entregue. Aproveite!" : order.status === "cancelled" ? "Seu pedido foi cancelado. Entre em contato caso tenha dúvidas." : `O status do seu pedido foi atualizado para "${label}".`}
+          ${order.status === "shipped" ? "Seu pedido está a caminho!" : order.status === "ready_for_pickup" ? "Seu pedido está pronto para retirada na loja!" : order.status === "delivered" ? "Seu pedido foi entregue. Aproveite!" : order.status === "cancelled" ? "Seu pedido foi cancelado. Entre em contato caso tenha dúvidas." : `O status do seu pedido foi atualizado para "${label}".`}
         </p>
       </div>
 

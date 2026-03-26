@@ -12,6 +12,7 @@ import {
   ClipboardCheck,
   Loader2,
   MessageCircle,
+  PackageCheck,
 } from 'lucide-react';
 import { adminOrderApi } from '@/lib/api';
 import type { Order } from '@/types';
@@ -24,6 +25,7 @@ const ALL_STATUSES = [
   'confirmed',
   'processing',
   'shipped',
+  'ready_for_pickup',
   'delivered',
   'cancelled',
 ] as const;
@@ -35,6 +37,7 @@ const STATUS_ICON: Record<string, React.ReactNode> = {
   confirmed: <ClipboardCheck size={18} />,
   processing: <Package size={18} />,
   shipped: <Truck size={18} />,
+  ready_for_pickup: <PackageCheck size={18} />,
   delivered: <CheckCircle2 size={18} />,
   cancelled: <XCircle size={18} />,
 };
@@ -110,10 +113,12 @@ function OrderDetailSkeleton() {
 // Status Timeline
 // ---------------------------------------------------------------------------
 
-function StatusTimeline({ currentStatus }: { currentStatus: OrderStatus }) {
-  // For cancelled orders, highlight only pending and cancelled
+function StatusTimeline({ currentStatus, deliveryMethod }: { currentStatus: OrderStatus; deliveryMethod: string }) {
   const isCancelled = currentStatus === 'cancelled';
-  const normalFlow: OrderStatus[] = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+  const isPickup = deliveryMethod === 'pickup';
+  const normalFlow: OrderStatus[] = isPickup
+    ? ['pending', 'confirmed', 'processing', 'ready_for_pickup', 'delivered']
+    : ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
   const statuses = isCancelled
     ? (['pending', 'cancelled'] as OrderStatus[])
     : normalFlow;
@@ -251,7 +256,7 @@ export function OrderDetailPage() {
 
       <div className="flex flex-col gap-6">
         {/* ---- Status Timeline ---- */}
-        <StatusTimeline currentStatus={order.status} />
+        <StatusTimeline currentStatus={order.status} deliveryMethod={order.delivery_method} />
 
         {/* ---- Info Cards ---- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -340,10 +345,17 @@ export function OrderDetailPage() {
                 onChange={setSelectedStatus}
                 disabled={statusMutation.isPending}
                 placeholder="Selecione o novo status..."
-                options={ALL_STATUSES.filter((s) => s !== order.status).map((s) => ({
-                  value: s,
-                  label: STATUS_LABELS[s] || s,
-                }))}
+                options={ALL_STATUSES
+                  .filter((s) => s !== order.status)
+                  .filter((s) => {
+                    // Hide irrelevant statuses based on delivery method
+                    if (order.delivery_method === 'pickup') return s !== 'shipped';
+                    return s !== 'ready_for_pickup';
+                  })
+                  .map((s) => ({
+                    value: s,
+                    label: STATUS_LABELS[s] || s,
+                  }))}
               />
               <button
                 onClick={handleStatusUpdate}
