@@ -8,6 +8,7 @@ import { ImportProductsModal } from './ImportProductsModal';
 export function ProductsAdminPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -69,18 +70,19 @@ export function ProductsAdminPage() {
         />
       )}
 
-      <div className="mb-4">
-        <div className="relative">
+      <form onSubmit={e => { e.preventDefault(); setSearch(searchInput); setPage(1); }} className="mb-4 flex gap-2">
+        <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             type="text"
             placeholder="Buscar produtos..."
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
             className="input pl-9"
           />
         </div>
-      </div>
+        <button type="submit" className="btn btn-primary shrink-0">Buscar</button>
+      </form>
 
       {isLoading ? (
         <div className="space-y-3">

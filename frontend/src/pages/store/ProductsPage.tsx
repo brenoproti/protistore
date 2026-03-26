@@ -279,6 +279,7 @@ function Pagination({
 export default function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
 
   // ---- Read filter state from URL ----
   const searchQuery = searchParams.get('search') || '';
@@ -343,8 +344,9 @@ export default function ProductsPage() {
     setSearchParams({});
   };
 
-  const handleSearchChange = (value: string) => {
-    updateParams({ search: value || null, page: null });
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateParams({ search: searchInput || null, page: null });
   };
 
   const handleSortChange = (value: string) => {
@@ -434,19 +436,22 @@ export default function ProductsPage() {
         </button>
 
         {/* Search */}
-        <div className="relative flex-1">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-          />
-          <input
-            type="text"
-            placeholder="Buscar produtos..."
-            value={searchQuery}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="input pl-9"
-          />
-        </div>
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 flex gap-2">
+          <div className="relative flex-1">
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            />
+            <input
+              type="text"
+              placeholder="Buscar produtos..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="input pl-9"
+            />
+          </div>
+          <button type="submit" className="btn btn-primary shrink-0">Buscar</button>
+        </form>
 
         {/* Sort */}
         <Select
