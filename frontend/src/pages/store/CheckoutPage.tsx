@@ -126,9 +126,9 @@ export function CheckoutPage() {
         <h1 className="text-2xl font-bold">Finalizar Compra</h1>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
-          <div className="space-y-6 lg:col-span-2">
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-full">
+        <div className="grid grid-cols-1 gap-6 lg:gap-8 lg:grid-cols-3">
+          <div className="min-w-0 space-y-6 lg:col-span-2">
             {/* Contact Info */}
             <div className="rounded-lg border p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Informações de Contato</h2>
@@ -286,12 +286,12 @@ export function CheckoutPage() {
           </div>
 
           {/* Order Summary Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24 rounded-lg border p-4 sm:p-6">
+          <div className="min-w-0 lg:col-span-1">
+            <div className="sticky top-24 rounded-lg border p-4 sm:p-6 overflow-hidden">
               <h2 className="mb-4 text-lg font-semibold">Resumo do Pedido</h2>
               <div className="mb-4 max-h-64 space-y-3 overflow-y-auto">
                 {items.map(item => (
-                  <div key={item.product_id} className="flex items-center gap-3">
+                  <div key={item.product_id} className="flex items-center gap-3 min-w-0">
                     {item.image ? (
                       <img src={item.image} alt={item.name} className="h-12 w-12 rounded object-cover" />
                     ) : (
