@@ -419,27 +419,59 @@ export const adminApi = {
     return api.get<DashboardMetrics>('/admin/dashboard').then((r) => r.data);
   },
 
-  /** Upload a file (image). Tries S3 presigned upload first, falls back to local upload. */
+  /** Convert an image file to WebP format for smaller file sizes. */
+  async convertToWebP(file: File, quality = 0.85): Promise<File> {
+    if (file.type === 'image/webp' || file.type === 'image/svg+xml' || file.type === 'image/gif') {
+      return file;
+    }
+
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas not supported'));
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('WebP conversion failed'));
+            const name = file.name.replace(/\.[^.]+$/, '.webp');
+            resolve(new File([blob], name, { type: 'image/webp' }));
+          },
+          'image/webp',
+          quality,
+        );
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = URL.createObjectURL(file);
+    });
+  },
+
+  /** Upload a file (image). Converts to WebP first, tries S3 presigned upload, falls back to local. */
   async uploadFile(file: File): Promise<{ url: string }> {
+    const converted = await this.convertToWebP(file);
+
     try {
       // Try presigned S3 upload
       const { data: presign } = await api.post<{ upload_url: string; file_url: string }>(
         '/admin/presign',
-        { filename: file.name, content_type: file.type },
+        { filename: converted.name, content_type: converted.type },
       );
 
       // Upload directly to S3
       await fetch(presign.upload_url, {
         method: 'PUT',
-        headers: { 'Content-Type': file.type },
-        body: file,
+        headers: { 'Content-Type': converted.type },
+        body: converted,
       });
 
       return { url: presign.file_url };
     } catch {
       // Fallback to local upload
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', converted);
       return api
         .post<{ url: string }>('/admin/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
