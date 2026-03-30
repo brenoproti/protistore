@@ -20,5 +20,9 @@ node_modules
 backend/uploads/*
 !backend/uploads/.gitkeep
 
+# Bun backend
+backend-bun/dist/
+backend-bun/uploads/
+
 # Docker volumes
 mysql_data

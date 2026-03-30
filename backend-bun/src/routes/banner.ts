@@ -3,11 +3,13 @@ import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
 import * as bannerRepo from "../repositories/banner";
 import type { BannerRequest } from "../types";
+import { toPublicBanner } from "../dto";
 
 export const publicBannerRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
   .get("/store/banners", async ({ storeId }) => {
-    return await bannerRepo.findActiveBannersByStoreID(storeId);
+    const banners = await bannerRepo.findActiveBannersByStoreID(storeId);
+    return banners.map(toPublicBanner);
   });
 
 export const adminBannerRoutes = new Elysia({ prefix: "/api/v1/admin/banners" })

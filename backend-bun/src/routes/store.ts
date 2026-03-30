@@ -3,10 +3,12 @@ import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
 import * as storeRepo from "../repositories/store";
 import type { UpdateStoreRequest, UpdateCustomizationRequest, StoreCustomization } from "../types";
+import { toPublicStore, toPublicCustomization } from "../dto";
 
 export const publicStoreRoutes = new Elysia()
   .get("/api/v1/stores", async () => {
-    return await storeRepo.listActiveStores();
+    const stores = await storeRepo.listActiveStores();
+    return stores.map(toPublicStore);
   });
 
 export const storeRoutes = new Elysia({ prefix: "/api/v1" })
@@ -18,7 +20,10 @@ export const storeRoutes = new Elysia({ prefix: "/api/v1" })
       return { code: "NOT_FOUND", message: "Store not found" };
     }
     const customization = await storeRepo.getCustomization(storeId);
-    return { store, customization };
+    return {
+      store: toPublicStore(store),
+      customization: customization ? toPublicCustomization(customization) : null,
+    };
   });
 
 export const adminStoreRoutes = new Elysia({ prefix: "/api/v1/admin" })

@@ -9,6 +9,7 @@ import * as adminRepo from "../repositories/admin";
 import { sendOrderConfirmation, sendStatusUpdate, notifyStoreNewOrder } from "../services/email";
 import { logger } from "../logger";
 import type { CartValidationRequest, CheckoutRequest, UpdateOrderStatusRequest, CartValidatedItem } from "../types";
+import { toOrderConfirmation, toOrderTracking } from "../dto";
 
 export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
@@ -176,7 +177,7 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
         }).catch(() => {});
       }
 
-      return order;
+      return toOrderConfirmation(order);
     } catch (err: unknown) {
       logger.error(err, "Failed to create order");
       set.status = 500;
@@ -194,14 +195,7 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
       set.status = 404;
       return { code: "NOT_FOUND", message: "Order not found" };
     }
-    // Public tracking: return only non-sensitive fields
-    return {
-      order_number: order.order_number,
-      status: order.status,
-      delivery_method: order.delivery_method,
-      created_at: order.created_at,
-      updated_at: order.updated_at,
-    };
+    return toOrderTracking(order);
   });
 
 export const adminOrderRoutes = new Elysia({ prefix: "/api/v1/admin" })

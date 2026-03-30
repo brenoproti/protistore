@@ -3,11 +3,13 @@ import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
 import * as brandRepo from "../repositories/brand";
 import type { BrandRequest } from "../types";
+import { toPublicBrand } from "../dto";
 
 export const publicBrandRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
   .get("/store/brands", async ({ storeId }) => {
-    return await brandRepo.findActiveBrandsByStoreID(storeId);
+    const brands = await brandRepo.findActiveBrandsByStoreID(storeId);
+    return brands.map(toPublicBrand);
   });
 
 export const adminBrandRoutes = new Elysia({ prefix: "/api/v1/admin/brands" })

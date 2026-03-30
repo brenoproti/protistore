@@ -3,6 +3,7 @@ import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
 import * as productRepo from "../repositories/product";
 import type { ProductRequest, ProductListParams } from "../types";
+import { toPublicProduct } from "../dto";
 
 export const publicProductRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
@@ -29,7 +30,7 @@ export const publicProductRoutes = new Elysia({ prefix: "/api/v1" })
 
     const { products, total } = await productRepo.findProductsByStoreID(storeId, params);
     return {
-      data: products,
+      data: products.map(toPublicProduct),
       total,
       page: params.page,
       per_page: params.per_page,
@@ -43,7 +44,7 @@ export const publicProductRoutes = new Elysia({ prefix: "/api/v1" })
       return { code: "NOT_FOUND", message: "Product not found" };
     }
     const related = await productRepo.findRelatedProducts(product.id, storeId, product.category_id, 4);
-    return { product, related };
+    return { product: toPublicProduct(product), related: related.map(toPublicProduct) };
   });
 
 export const adminProductRoutes = new Elysia({ prefix: "/api/v1/admin/products" })

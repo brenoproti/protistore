@@ -3,12 +3,14 @@ import { tenantMiddleware } from "../middleware/tenant";
 import { authMiddleware } from "../middleware/auth";
 import * as catRepo from "../repositories/category";
 import type { CategoryRequest } from "../types";
+import { toPublicCategory } from "../dto";
 
 export const publicCategoryRoutes = new Elysia({ prefix: "/api/v1" })
   .use(tenantMiddleware)
   .get("/store/categories", async ({ storeId }) => {
     const cats = await catRepo.findActiveCategoriesByStoreID(storeId);
-    return catRepo.buildCategoryTree(cats);
+    const tree = catRepo.buildCategoryTree(cats);
+    return tree.map(toPublicCategory);
   });
 
 export const adminCategoryRoutes = new Elysia({ prefix: "/api/v1/admin/categories" })
