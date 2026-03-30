@@ -34,9 +34,13 @@ export async function verifyToken(token: string): Promise<TokenClaims> {
 }
 
 // Cleanup expired revoked tokens periodically (every hour)
-setInterval(() => {
+const tokenCleanupInterval = setInterval(() => {
   cleanupExpiredTokens().catch(() => {});
 }, 60 * 60 * 1000);
+
+export function stopTokenCleanup() {
+  clearInterval(tokenCleanupInterval);
+}
 
 export async function login(req: LoginRequest, storeId: number): Promise<LoginResponse> {
   const admin = await findAdminByEmail(req.email, storeId);

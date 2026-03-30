@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Plus, Search, ChevronLeft, ChevronRight, Upload, Download, ChevronDown } from 'lucide-react';
+import { Plus, Search, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { adminProductApi } from '@/lib/api';
 import { ImportProductsModal } from './ImportProductsModal';
 
@@ -10,8 +10,6 @@ export function ProductsAdminPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [showImport, setShowImport] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
-  const exportRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
   const perPage = 20;
 
@@ -23,11 +21,6 @@ export function ProductsAdminPage() {
   const products = data?.data ?? [];
   const totalPages = data?.total_pages ?? 1;
 
-  const handleExport = (format: 'csv' | 'xlsx') => {
-    setShowExportMenu(false);
-    adminProductApi.exportProducts(format);
-  };
-
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -36,27 +29,6 @@ export function ProductsAdminPage() {
           <button onClick={() => setShowImport(true)} className="btn btn-outline gap-2">
             <Upload size={16} /> Importar
           </button>
-          <div className="relative" ref={exportRef}>
-            <button onClick={() => setShowExportMenu(v => !v)} className="btn btn-outline gap-2">
-              <Download size={16} /> Exportar <ChevronDown size={14} />
-            </button>
-            {showExportMenu && (
-              <div className="absolute right-0 top-full z-10 mt-1 w-36 rounded-lg border bg-background py-1 shadow-lg">
-                <button
-                  onClick={() => handleExport('csv')}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                >
-                  CSV (.csv)
-                </button>
-                <button
-                  onClick={() => handleExport('xlsx')}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
-                >
-                  Excel (.xlsx)
-                </button>
-              </div>
-            )}
-          </div>
           <Link to="/admin/products/new" className="btn btn-primary gap-2">
             <Plus size={16} /> Adicionar Produto
           </Link>

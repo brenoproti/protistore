@@ -5,10 +5,9 @@ import { rateLimit } from "../middleware/rateLimit";
 import * as productRepo from "../repositories/product";
 import * as catRepo from "../repositories/category";
 import * as brandRepo from "../repositories/brand";
-import type { ImportResult, ImportError } from "../types";
+import type { ImportResult } from "../types";
 import { logger } from "../logger";
 import { parse } from "csv-parse/sync";
-import { stringify } from "csv-stringify/sync";
 
 const slugRe = /[^a-z0-9]+/g;
 
@@ -236,61 +235,4 @@ export const importRoutes = new Elysia({ prefix: "/api/v1/admin/products" })
 
     return result;
   })
-  .get("/export", async ({ query, storeId, set }) => {
-    const format = (query.format as string) || "csv";
-
-    const products = await productRepo.findAllProductsByStoreID(storeId);
-    const categories = await catRepo.findCategoriesByStoreID(storeId);
-    const brands = await brandRepo.findBrandsByStoreID(storeId);
-
-    const catMap = new Map<number, string>();
-    for (const c of categories) catMap.set(c.id, c.name);
-    const brandMap = new Map<number, string>();
-    for (const b of brands) brandMap.set(b.id, b.name);
-
-    const headers = ["nome", "descricao", "preco", "preco_comparacao", "preco_custo", "sku", "estoque", "categoria", "marca", "ativo", "destaque", "imagem_url"];
-
-    const rows: string[][] = [];
-    for (const p of products) {
-      const images = await productRepo.findImagesByProductID(p.id);
-      rows.push([
-        p.name,
-        p.description || "",
-        p.price.toFixed(2),
-        p.compare_at_price ? p.compare_at_price.toFixed(2) : "",
-        p.cost_price ? p.cost_price.toFixed(2) : "",
-        p.sku || "",
-        String(p.stock),
-        p.category_id ? catMap.get(p.category_id) || "" : "",
-        p.brand_id ? brandMap.get(p.brand_id) || "" : "",
-        p.is_active ? "sim" : "nao",
-        p.is_featured ? "sim" : "nao",
-        images.length > 0 ? images[0].url : "",
-      ]);
-    }
-
-    if (format === "xlsx") {
-      const ExcelJS = await import("exceljs");
-      const workbook = new ExcelJS.default.Workbook();
-      const sheet = workbook.addWorksheet("Produtos");
-      sheet.addRow(headers);
-      for (const row of rows) {
-        sheet.addRow(row);
-      }
-      const buffer = await workbook.xlsx.writeBuffer();
-      set.headers = {
-        "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "content-disposition": "attachment; filename=produtos.xlsx",
-      };
-      return new Response(buffer as ArrayBuffer);
-    }
-
-    // CSV with BOM
-    const csvData = stringify([headers, ...rows]);
-    const bom = "\uFEFF";
-    set.headers = {
-      "content-type": "text/csv; charset=utf-8",
-      "content-disposition": "attachment; filename=produtos.csv",
-    };
-    return new Response(bom + csvData);
-  });
+;

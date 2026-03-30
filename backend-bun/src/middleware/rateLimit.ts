@@ -5,10 +5,12 @@ interface RateLimitEntry {
   resetAt: number;
 }
 
+const MAX_STORE_SIZE = 10_000;
+
 const stores = new Map<string, Map<string, RateLimitEntry>>();
 
-// Cleanup stale entries every 5 minutes
-setInterval(() => {
+// Cleanup stale entries every minute
+const cleanupInterval = setInterval(() => {
   const now = Date.now();
   for (const [name, store] of stores) {
     for (const [key, entry] of store) {
@@ -16,7 +18,11 @@ setInterval(() => {
     }
     if (store.size === 0) stores.delete(name);
   }
-}, 5 * 60 * 1000);
+}, 60 * 1000);
+
+export function stopRateLimitCleanup() {
+  clearInterval(cleanupInterval);
+}
 
 function getStore(name: string): Map<string, RateLimitEntry> {
   let store = stores.get(name);
@@ -52,6 +58,15 @@ export function rateLimit({ name, max, windowSec }: RateLimitOptions) {
       const entry = store.get(ip);
 
       if (!entry || now > entry.resetAt) {
+        // New IP — check if store is full
+        if (!entry && store.size >= MAX_STORE_SIZE) {
+          set.status = 429;
+          set.headers["Retry-After"] = String(windowSec);
+          return {
+            code: "TOO_MANY_REQUESTS",
+            message: "Too many requests. Please try again later.",
+          };
+        }
         store.set(ip, { count: 1, resetAt: now + windowMs });
         return;
       }

@@ -223,6 +223,13 @@ export async function notifyStoreNewOrder(order: Order, storeName: string, admin
   }
 }
 
+export async function closeEmailTransporter(): Promise<void> {
+  if (transporter) {
+    transporter.close();
+    transporter = null;
+  }
+}
+
 export async function sendStatusUpdate(order: Order, storeName: string): Promise<void> {
   const t = getTransporter();
   if (!t) return;

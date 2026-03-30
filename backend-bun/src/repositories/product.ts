@@ -64,14 +64,6 @@ export async function findProductsByStoreID(
   return { products, total };
 }
 
-export async function findAllProductsByStoreID(storeId: number): Promise<Product[]> {
-  const [rows] = await getPool().query<RowDataPacket[]>(
-    "SELECT * FROM products WHERE store_id = ? ORDER BY name",
-    [storeId]
-  );
-  return rows as Product[];
-}
-
 export async function countProductsByStoreID(storeId: number): Promise<number> {
   const [rows] = await getPool().query<RowDataPacket[]>(
     "SELECT COUNT(*) as total FROM products WHERE store_id = ?",

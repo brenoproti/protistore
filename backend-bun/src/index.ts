@@ -15,6 +15,9 @@ import { dashboardRoutes } from "./routes/dashboard";
 import { uploadRoutes } from "./routes/upload";
 import { presignRoutes } from "./routes/presign";
 import { importRoutes } from "./routes/import";
+import { stopRateLimitCleanup } from "./middleware/rateLimit";
+import { stopTokenCleanup } from "./services/auth";
+import { closeEmailTransporter } from "./services/email";
 
 async function main() {
   logger.info("=== ProtiStore Backend (Bun + Elysia) ===");
@@ -141,6 +144,9 @@ async function main() {
   // Graceful shutdown
   const shutdown = async () => {
     logger.info("Shutting down...");
+    stopRateLimitCleanup();
+    stopTokenCleanup();
+    await closeEmailTransporter();
     try {
       await getPool().end();
     } catch { /* ignore */ }

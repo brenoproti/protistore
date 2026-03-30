@@ -346,23 +346,6 @@ export const adminProductApi = {
       .then((r) => r.data);
   },
 
-  exportProducts(format: 'csv' | 'xlsx' = 'csv') {
-    return api
-      .get('/admin/products/export', {
-        params: { format },
-        responseType: 'blob',
-      })
-      .then((r) => {
-        const ext = format === 'xlsx' ? 'xlsx' : 'csv';
-        const blob = new Blob([r.data]);
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `produtos.${ext}`;
-        a.click();
-        window.URL.revokeObjectURL(url);
-      });
-  },
 };
 
 // ===========================================================================
