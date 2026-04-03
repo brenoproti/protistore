@@ -56,7 +56,7 @@ export async function login(req: LoginRequest, storeId: number): Promise<LoginRe
     throw new Error("Invalid credentials");
   }
 
-  const accessToken = await generateToken(admin.id, admin.store_id, admin.email, "access", "15m");
+  const accessToken = await generateToken(admin.id, admin.store_id, admin.email, "access", "1h");
   const refreshToken = await generateToken(admin.id, admin.store_id, admin.email, "refresh", "7d");
 
   return {
@@ -92,7 +92,7 @@ export async function refresh(refreshToken: string, storeId: number): Promise<Re
     await revokeToken(claims.jti, claims.admin_id, new Date(claims.exp * 1000));
   }
 
-  const newAccess = await generateToken(admin.id, admin.store_id, admin.email, "access", "15m");
+  const newAccess = await generateToken(admin.id, admin.store_id, admin.email, "access", "1h");
   const newRefresh = await generateToken(admin.id, admin.store_id, admin.email, "refresh", "7d");
 
   return { access_token: newAccess, refresh_token: newRefresh };

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Search, ChevronLeft, ChevronRight, Upload } from 'lucide-react';
 import { adminProductApi } from '@/lib/api';
 import { ImportProductsModal } from './ImportProductsModal';
+import { formatCurrency } from '@/lib/formatters';
 
 export function ProductsAdminPage() {
   const [page, setPage] = useState(1);
@@ -95,10 +96,10 @@ export function ProductsAdminPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="font-medium">${product.price.toFixed(2)}</span>
+                      <span className="font-medium">{formatCurrency(product.price)}</span>
                       {product.compare_at_price && (
                         <span className="ml-1 text-xs text-muted-foreground line-through">
-                          ${product.compare_at_price.toFixed(2)}
+                          {formatCurrency(product.compare_at_price)}
                         </span>
                       )}
                     </td>

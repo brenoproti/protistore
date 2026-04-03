@@ -7,6 +7,7 @@ import { ArrowLeft, Loader2, Store, Truck, CreditCard, Banknote, QrCode } from '
 import { useCart } from '@/contexts/CartContext';
 import { storeApi } from '@/lib/api';
 import { toast } from 'sonner';
+import { formatCurrency } from '@/lib/formatters';
 
 const checkoutSchema = z.object({
   customer_name: z.string().min(2, 'Nome é obrigatório'),
@@ -70,7 +71,7 @@ export function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-[1280px] py-16 text-center">
         <h1 className="mb-2 text-2xl font-bold">Seu carrinho está vazio</h1>
         <p className="mb-6 text-muted-foreground">Adicione alguns produtos antes de finalizar a compra.</p>
         <Link to="/products" className="btn btn-primary">Ver Produtos</Link>
@@ -118,7 +119,7 @@ export function CheckoutPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-[1280px] py-8">
       <div className="mb-6">
         <Link to="/cart" className="btn btn-ghost btn-sm gap-1 mb-4">
           <ArrowLeft size={16} /> Voltar ao Carrinho
@@ -301,14 +302,14 @@ export function CheckoutPage() {
                       <p className="truncate text-sm font-medium">{item.name}</p>
                       <p className="text-xs text-muted-foreground">Qtd: {item.quantity}</p>
                     </div>
-                    <span className="shrink-0 text-sm font-medium">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="shrink-0 text-sm font-medium">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
                 ))}
               </div>
               <div className="space-y-2 border-t pt-4 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Subtotal</span>
-                  <span>R$ {totalPrice.toFixed(2)}</span>
+                  <span>{formatCurrency(totalPrice)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Frete</span>
@@ -316,7 +317,7 @@ export function CheckoutPage() {
                 </div>
                 <div className="flex justify-between border-t pt-2 text-base font-semibold">
                   <span>Total</span>
-                  <span className="text-primary">R$ {totalPrice.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
               <label className="mt-6 flex items-start gap-2 text-sm">

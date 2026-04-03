@@ -19,6 +19,7 @@ import { storeApi } from '@/lib/api';
 import type { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { ProductCard } from '@/components/store/ProductCard';
+import { formatCurrency } from '@/lib/formatters';
 
 interface ProductDetailResponse {
   product: Product;
@@ -31,7 +32,7 @@ interface ProductDetailResponse {
 
 function DetailSkeleton() {
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto w-full max-w-[1280px] py-8">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         <div className="flex flex-col gap-3">
           <div className="aspect-square skeleton rounded-xl" />
@@ -229,7 +230,7 @@ export default function ProductDetailPage() {
 
   if (isError || !product) {
     return (
-      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-20 text-center">
+      <div className="mx-auto w-full max-w-[1280px] py-20 text-center">
         <h1 className="text-2xl font-bold mb-2">Produto não encontrado</h1>
         <p className="text-muted-foreground mb-6">
           O produto que você está procurando não existe ou foi removido.
@@ -242,7 +243,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="mx-auto w-full max-w-[1280px] py-8">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-sm text-muted-foreground mb-8 flex-wrap">
         <Link to="/" className="hover:text-foreground transition-colors">Início</Link>
@@ -280,12 +281,12 @@ export default function ProductDetailPage() {
           {/* Price */}
           <div className="flex items-center gap-3 flex-wrap">
             <span className="text-3xl font-bold text-primary">
-              R$ {product.price.toFixed(2)}
+              {formatCurrency(product.price)}
             </span>
             {hasDiscount && (
               <>
                 <span className="text-lg text-muted-foreground line-through">
-                  R$ {product.compare_at_price!.toFixed(2)}
+                  {formatCurrency(product.compare_at_price!)}
                 </span>
                 <span className="badge bg-destructive text-white">
                   -{discountPercent}% OFF

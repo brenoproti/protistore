@@ -108,7 +108,7 @@ export function OrderTrackingPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto max-w-2xl py-12">
       <div className="mb-2">
         <Link to="/" className="btn btn-ghost btn-sm gap-1">
           <ArrowLeft size={16} /> Voltar

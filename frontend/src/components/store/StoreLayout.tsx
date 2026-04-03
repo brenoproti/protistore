@@ -19,7 +19,6 @@ export function StoreLayout() {
   const { totalItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
@@ -62,19 +61,22 @@ export function StoreLayout() {
         </div>
       )}
 
+      <div className="sticky top-0 z-50 px-4 sm:px-6 lg:px-8 py-2" style={{ backgroundColor: 'var(--color-background)' }}>
       <header
-        className="sticky top-0 z-50 border-b"
+        className="mx-auto max-w-[1280px] rounded-2xl border"
         style={{
           backgroundColor: headerBg,
           color: headerTextColor,
-          boxShadow: '0 1px 3px 0 rgba(0,0,0,0.05), 0 1px 2px -1px rgba(0,0,0,0.05)',
+          boxShadow: '0 2px 8px 0 rgba(0,0,0,0.06), 0 1px 3px -1px rgba(0,0,0,0.05)',
         }}
       >
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5">
-          <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 px-4 sm:px-5 py-3">
+          {/* Left: hamburger + logo */}
+          <div className="flex items-center gap-3 shrink-0">
             <button
-              className="btn btn-ghost btn-icon md:hidden"
+              className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors duration-200 cursor-pointer"
               onClick={() => setMenuOpen(!menuOpen)}
+              aria-label={menuOpen ? 'Fechar menu' : 'Abrir menu'}
             >
               {menuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -87,68 +89,92 @@ export function StoreLayout() {
             </Link>
           </div>
 
-          <nav className="hidden items-center gap-1 md:flex">
-            <Link to="/" className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${pathname === '/' ? 'bg-black/10 font-semibold' : 'hover:bg-black/5'}`} style={{ color: 'inherit' }}>
-              Início
-            </Link>
-            <Link to="/products" className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${pathname.startsWith('/products') ? 'bg-black/10 font-semibold' : 'hover:bg-black/5'}`} style={{ color: 'inherit' }}>
-              Produtos
-            </Link>
-          </nav>
+          {/* Center: search */}
+          <form onSubmit={handleSearch} className="relative flex-1 hidden sm:block max-w-xl mx-auto">
+            <label htmlFor="header-search" className="sr-only">Buscar produtos</label>
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
+            <input
+              id="header-search"
+              type="search"
+              placeholder="Buscar produtos, marcas, categorias..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full rounded-full border border-border bg-muted/50 py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground hover:border-border focus:border-primary focus:bg-card focus:outline-none focus:ring-2 focus:ring-primary/15 transition-all"
+            />
+          </form>
 
-          <div className="flex items-center gap-2">
-            <form onSubmit={handleSearch} className="relative hidden sm:block">
-              <label htmlFor="header-search" className="sr-only">Buscar produtos</label>
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" aria-hidden="true" />
-              <input
-                id="header-search"
-                type="search"
-                placeholder="Buscar produtos..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onFocus={() => setSearchFocused(true)}
-                onBlur={() => setSearchFocused(false)}
-                className="input pl-9 bg-muted/50 border-transparent hover:border-border focus:border-primary focus:bg-card"
-                style={{ width: searchFocused ? '18rem' : '13rem', transition: 'width 300ms ease, border-color 200ms ease, background-color 200ms ease' }}
-              />
-            </form>
-            <Link to="/cart" className="relative flex items-center justify-center w-9 h-9 rounded-lg hover:bg-black/5 transition-colors duration-200 group/cart">
+          {/* Right: cart */}
+          <div className="flex items-center gap-2 shrink-0">
+            <Link to="/cart" className="relative flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 transition-colors duration-200 group/cart">
               <ShoppingCart size={20} className="transition-transform duration-200 group-hover/cart:scale-110" />
               {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-scale-in">
+                <span className="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white shadow-sm ring-2 ring-white animate-scale-in">
                   {totalItems}
                 </span>
               )}
             </Link>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {menuOpen && (
-          <div className="border-t px-4 py-3 md:hidden animate-in">
-            <form onSubmit={handleSearch} className="mb-3">
-              <div className="relative">
-                <label htmlFor="mobile-search" className="sr-only">Buscar produtos</label>
-                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-                <input
-                  id="mobile-search"
-                  type="search"
-                  placeholder="Buscar produtos..."
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                  className="input pl-9"
-                />
-              </div>
-            </form>
-            <nav className="flex flex-col gap-0.5">
-              <Link to="/" className="py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-muted transition-colors" onClick={() => setMenuOpen(false)}>Início</Link>
-              <Link to="/products" className="py-2.5 px-3 rounded-lg text-sm font-medium hover:bg-muted transition-colors" onClick={() => setMenuOpen(false)}>Produtos</Link>
-            </nav>
-          </div>
-        )}
       </header>
 
-      <main className="flex-1">
+      {/* Side drawer */}
+      {menuOpen && (
+        <>
+          <div className="fixed inset-0 bg-black/40 z-40 animate-in" onClick={() => setMenuOpen(false)} />
+          <aside className="fixed top-0 left-0 bottom-0 w-72 bg-card z-50 shadow-2xl flex flex-col" style={{ animation: 'slide-in-left 200ms ease-out' }}>
+            <div className="flex items-center justify-between px-5 py-4 border-b">
+              <Link to="/" className="flex items-center gap-2.5" onClick={() => setMenuOpen(false)}>
+                {store?.logo_url ? (
+                  <img src={store.logo_url} alt={store?.name || ''} className="h-8 w-auto object-contain" />
+                ) : (
+                  <span className="text-lg font-bold tracking-tight">{store?.name}</span>
+                )}
+              </Link>
+              <button
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-muted transition-colors cursor-pointer"
+                aria-label="Fechar menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Mobile search */}
+            <div className="px-4 pt-4 sm:hidden">
+              <form onSubmit={(e) => { handleSearch(e); setMenuOpen(false); }}>
+                <div className="relative">
+                  <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="search"
+                    placeholder="Buscar produtos..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    className="input pl-9 w-full"
+                  />
+                </div>
+              </form>
+            </div>
+
+            <nav className="flex flex-col gap-0.5 px-3 pt-4">
+              <Link to="/" className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${pathname === '/' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`} onClick={() => setMenuOpen(false)}>
+                Início
+              </Link>
+              <Link to="/products" className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${pathname.startsWith('/products') ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`} onClick={() => setMenuOpen(false)}>
+                Produtos
+              </Link>
+              <Link to="/cart" className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-colors ${pathname === '/cart' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`} onClick={() => setMenuOpen(false)}>
+                Carrinho
+              </Link>
+              <Link to="/rastreio" className={`py-2.5 px-3 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${pathname === '/rastreio' ? 'bg-primary/10 text-primary' : 'hover:bg-muted'}`} onClick={() => setMenuOpen(false)}>
+                <Package size={16} /> Rastrear Pedido
+              </Link>
+            </nav>
+          </aside>
+        </>
+      )}
+      </div>
+
+      <main className="flex-1 px-4 sm:px-6 lg:px-8">
         <Outlet />
       </main>
 

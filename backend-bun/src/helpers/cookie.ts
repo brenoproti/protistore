@@ -42,5 +42,5 @@ export function parseCookies(header: string | null): Record<string, string> {
 
 export const COOKIE_ACCESS = "access_token";
 export const COOKIE_REFRESH = "refresh_token";
-export const ACCESS_MAX_AGE = 15 * 60; // 15 minutes
+export const ACCESS_MAX_AGE = 60 * 60; // 1 hour
 export const REFRESH_MAX_AGE = 7 * 24 * 60 * 60; // 7 days

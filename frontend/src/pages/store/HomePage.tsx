@@ -40,8 +40,8 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
   if (banners.length === 0) return null;
 
   return (
-    <div className="relative w-full overflow-hidden">
-      <div ref={emblaRef} className="overflow-hidden">
+    <div className="relative w-full overflow-hidden rounded-2xl">
+      <div ref={emblaRef} className="overflow-hidden rounded-2xl">
         <div className="flex">
           {banners.map((banner) => {
             const Wrapper = banner.link_url ? Link : 'div';
@@ -56,29 +56,29 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
               >
                 {/* @ts-expect-error dynamic element */}
                 <Wrapper {...wrapperProps} className="block">
-                  <div className="relative aspect-[2/1] sm:aspect-[3/1] w-full overflow-hidden bg-muted">
+                  <div className="relative aspect-[5/2] sm:aspect-[7/2] max-h-[380px] w-full overflow-hidden bg-muted">
                     <img
                       src={banner.image_url}
                       alt={banner.title}
-                      width={1200}
+                      width={1400}
                       height={400}
                       className="h-full w-full object-cover"
                     />
                     {(banner.title || banner.subtitle) && (
-                      <div className="absolute inset-0 flex items-center bg-gradient-to-r from-black/60 via-black/30 to-transparent">
-                        <div className="max-w-2xl px-6 sm:px-12 lg:px-20">
+                      <div className="absolute inset-0 flex items-end sm:items-center bg-gradient-to-r from-black/60 via-black/30 to-transparent">
+                        <div className="max-w-2xl px-6 pb-10 sm:pb-0 sm:px-12 lg:px-16">
                           {banner.title && (
-                            <h2 className="text-xl sm:text-3xl lg:text-5xl font-bold text-white mb-2 sm:mb-4 drop-shadow-lg">
+                            <h2 className="text-lg sm:text-2xl lg:text-4xl font-bold text-white mb-1.5 sm:mb-3 drop-shadow-lg leading-tight">
                               {banner.title}
                             </h2>
                           )}
                           {banner.subtitle && (
-                            <p className="text-sm sm:text-lg text-white/90 max-w-lg leading-relaxed drop-shadow">
+                            <p className="text-xs sm:text-base text-white/90 max-w-md leading-relaxed drop-shadow">
                               {banner.subtitle}
                             </p>
                           )}
                           {banner.link_url && (
-                            <span className="inline-flex items-center gap-1.5 mt-4 text-sm font-medium text-white bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full hover:bg-white/30 transition-colors">
+                            <span className="inline-flex items-center gap-1.5 mt-3 sm:mt-4 text-xs sm:text-sm font-medium text-white bg-white/20 backdrop-blur-sm px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-white/30 transition-colors">
                               Explorar <ArrowRight size={14} />
                             </span>
                           )}
@@ -95,7 +95,7 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
 
       {/* Navigation dots */}
       {banners.length > 1 && (
-        <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5">
+        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5">
           {banners.map((_, index) => (
             <button
               key={index}
@@ -120,11 +120,8 @@ function BannerCarousel({ banners }: { banners: Banner[] }) {
 
 function SectionHeader({ title, linkTo, linkText }: { title: string; linkTo: string; linkText: string }) {
   return (
-    <div className="flex items-center justify-between mb-8">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">{title}</h2>
-        <div className="mt-1.5 h-1 w-12 rounded-full bg-primary" />
-      </div>
+    <div className="flex items-center justify-between mb-6">
+      <h2 className="text-xl sm:text-2xl font-bold tracking-tight">{title}</h2>
       <Link to={linkTo} className="text-sm font-medium text-primary hover:text-primary-hover transition-colors flex items-center gap-1 group">
         {linkText} <ChevronRight size={16} className="transition-transform group-hover:translate-x-0.5" />
       </Link>
@@ -138,7 +135,9 @@ function SectionHeader({ title, linkTo, linkText }: { title: string; linkTo: str
 
 function BannerSkeleton() {
   return (
-    <div className="w-full aspect-[2/1] sm:aspect-[3/1] skeleton" />
+    <div className="px-4 sm:px-6 lg:px-8">
+      <div className="rounded-2xl overflow-hidden aspect-[5/2] sm:aspect-[7/2] max-h-[380px] skeleton" />
+    </div>
   );
 }
 
@@ -223,18 +222,20 @@ export default function HomePage() {
   const productsLoading = featuredLoading || (!hasFeatured && recentLoading);
 
   return (
-    <div className="flex flex-col gap-12 pb-16">
+    <div className="flex flex-col gap-10 sm:gap-12 pb-16">
       {/* ---- Banner Carousel ---- */}
-      <section>
-        {bannersLoading ? (
-          <BannerSkeleton />
-        ) : banners && banners.length > 0 ? (
-          <BannerCarousel banners={banners} />
-        ) : null}
+      <section className="mx-auto w-full max-w-[1280px] pt-4 sm:pt-6">
+        <div>
+          {bannersLoading ? (
+            <div className="rounded-2xl overflow-hidden aspect-[5/2] sm:aspect-[7/2] max-h-[380px] skeleton" />
+          ) : banners && banners.length > 0 ? (
+            <BannerCarousel banners={banners} />
+          ) : null}
+        </div>
       </section>
 
       {/* ---- Featured / Recent Products ---- */}
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-[1280px]">
         <SectionHeader
           title={hasFeatured ? 'Produtos em Destaque' : 'Novidades'}
           linkTo={hasFeatured ? '/products?featured=true' : '/products'}
@@ -256,87 +257,89 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* ---- Brands ---- */}
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="Navegue por Marca" linkTo="/products" linkText="Todos os produtos" />
-
-        {brandsLoading ? (
-          <CategoryGridSkeleton count={6} />
-        ) : brands && brands.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {brands.map((brand) => (
-              <Link
-                key={brand.id}
-                to={`/products?brand_ids=${brand.id}`}
-                className="group flex flex-col items-center text-center rounded-xl border border-border bg-card p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
-              >
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-3 group-hover:bg-primary/10 transition-colors duration-300">
-                  {brand.logo_url ? (
-                    <img
-                      src={brand.logo_url}
-                      alt={brand.name}
-                      loading="lazy"
-                      className="h-10 w-10 object-contain transition-transform duration-300 group-hover:scale-110"
-                    />
-                  ) : (
-                    <span className="text-muted-foreground text-xl font-bold group-hover:text-primary transition-colors">
-                      {brand.name.charAt(0)}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-sm font-medium group-hover:text-primary transition-colors">
-                  {brand.name}
-                </h3>
-              </Link>
-            ))}
-          </div>
-        ) : null}
-      </section>
-
       {/* ---- Categories ---- */}
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
-        <SectionHeader title="Comprar por Categoria" linkTo="/products" linkText="Todos os produtos" />
+      {(categoriesLoading || (categories && categories.length > 0)) && (
+        <section className="mx-auto w-full max-w-[1280px]">
+          <SectionHeader title="Comprar por Categoria" linkTo="/products" linkText="Todos os produtos" />
 
-        {categoriesLoading ? (
-          <CategoryGridSkeleton />
-        ) : categories && categories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                to={`/products?category_id=${category.id}`}
-                className="group relative flex flex-col items-center text-center rounded-xl overflow-hidden"
-              >
-                <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
-                  {category.image_url ? (
-                    <img
-                      src={category.image_url}
-                      alt={category.name}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-muted-foreground text-3xl font-bold">
-                      {category.name.charAt(0)}
-                    </div>
-                  )}
-                  {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-3">
-                  <h3 className="text-sm font-semibold text-white drop-shadow-lg">
-                    {category.name}
-                  </h3>
-                </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <p className="text-muted-foreground text-center py-12">
-            Nenhuma categoria disponível.
-          </p>
-        )}
-      </section>
+          {categoriesLoading ? (
+            <CategoryGridSkeleton />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {categories!.map((category) => (
+                <Link
+                  key={category.id}
+                  to={`/products?category_id=${category.id}`}
+                  className="group relative flex flex-col items-center text-center rounded-xl overflow-hidden"
+                >
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                    {category.image_url ? (
+                      <img
+                        src={category.image_url}
+                        alt={category.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground text-3xl font-bold">
+                        {category.name.charAt(0)}
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <h3 className="text-sm font-semibold text-white drop-shadow-lg">
+                      {category.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ---- Brands ---- */}
+      {(brandsLoading || (brands && brands.length > 0)) && (
+        <section className="mx-auto w-full max-w-[1280px]">
+          <SectionHeader title="Navegue por Marca" linkTo="/products" linkText="Todos os produtos" />
+
+          {brandsLoading ? (
+            <CategoryGridSkeleton count={6} />
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {brands!.map((brand) => (
+                <Link
+                  key={brand.id}
+                  to={`/products?brand_ids=${brand.id}`}
+                  className="group relative flex flex-col items-center text-center rounded-xl overflow-hidden"
+                >
+                  <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+                    {brand.logo_url ? (
+                      <img
+                        src={brand.logo_url}
+                        alt={brand.name}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <span className="text-muted-foreground text-3xl font-bold">
+                        {brand.name.charAt(0)}
+                      </span>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-3">
+                    <h3 className="text-sm font-semibold text-white drop-shadow-lg">
+                      {brand.name}
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

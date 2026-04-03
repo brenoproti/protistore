@@ -9,9 +9,9 @@ export async function findProductsByStoreID(
   const args: unknown[] = [storeId];
 
   if (params.search) {
-    where += " AND (p.name LIKE ? OR p.sku LIKE ?)";
+    where += " AND (p.name LIKE ? OR p.sku LIKE ? OR p.description LIKE ? OR b.name LIKE ? OR c.name LIKE ?)";
     const like = `%${params.search}%`;
-    args.push(like, like);
+    args.push(like, like, like, like, like);
   }
   if (params.category_id) {
     where += " AND p.category_id = ?";
@@ -41,9 +41,14 @@ export async function findProductsByStoreID(
     args.push(params.active);
   }
 
+  // Only join brand/category tables when searching (to match by their names)
+  const joins = params.search
+    ? "LEFT JOIN brands b ON b.id = p.brand_id LEFT JOIN categories c ON c.id = p.category_id"
+    : "";
+
   // Count
   const [countRows] = await getPool().query<RowDataPacket[]>(
-    `SELECT COUNT(*) as total FROM products p ${where}`,
+    `SELECT COUNT(*) as total FROM products p ${joins} ${where}`,
     args
   );
   const total = (countRows[0] as { total: number }).total;
@@ -54,7 +59,7 @@ export async function findProductsByStoreID(
 
   const offset = (params.page - 1) * params.per_page;
   const [rows] = await getPool().query<RowDataPacket[]>(
-    `SELECT p.* FROM products p ${where} ORDER BY ${sortCol} ${sortOrder} LIMIT ? OFFSET ?`,
+    `SELECT p.* FROM products p ${joins} ${where} ORDER BY ${sortCol} ${sortOrder} LIMIT ? OFFSET ?`,
     [...args, params.per_page, offset]
   );
 

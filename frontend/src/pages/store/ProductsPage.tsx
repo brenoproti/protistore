@@ -418,7 +418,7 @@ export default function ProductsPage() {
     (priceMax ? 1 : 0);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+    <div className="mx-auto w-full max-w-[1280px] py-6">
       {/* ---- Top bar ---- */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
         {/* Mobile filter toggle */}

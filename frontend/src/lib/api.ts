@@ -111,7 +111,8 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    const isRefreshRequest = originalRequest.url?.includes('/auth/refresh');
+    if (error.response?.status === 401 && !originalRequest._retry && !isRefreshRequest) {
       if (isRefreshing) {
         // Another refresh is already in-flight – queue this request
         return new Promise<void>((resolve, reject) => {
@@ -123,8 +124,9 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Refresh token is sent automatically via httpOnly cookie
-        await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true });
+        // Refresh token is sent automatically via httpOnly cookie.
+        // Use the configured `api` instance so X-Store-Slug is attached.
+        await api.post('/auth/refresh', {});
 
         processQueue(null);
         return api(originalRequest);

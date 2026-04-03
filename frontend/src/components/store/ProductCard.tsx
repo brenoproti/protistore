@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart, Check, Eye } from 'lucide-react';
 import type { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
+import { formatCurrency } from '@/lib/formatters';
 
 export function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -88,11 +89,11 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="flex flex-col">
             {hasDiscount && (
               <span className="text-xs text-muted-foreground line-through leading-none mb-0.5">
-                R$ {product.compare_at_price!.toFixed(2)}
+                {formatCurrency(product.compare_at_price!)}
               </span>
             )}
             <span className="text-lg font-bold text-primary leading-none">
-              R$ {product.price.toFixed(2)}
+              {formatCurrency(product.price)}
             </span>
           </div>
           {product.stock > 0 && (

@@ -183,6 +183,9 @@
     border-radius: var(--radius);
   }
 
+  /* ---- Scrollbar hide (for horizontal scroll containers) ---- */
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
   /* ---- Glass panel ---- */
   .glass {
     background: rgba(255, 255, 255, 0.75);
@@ -210,6 +213,11 @@
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 @keyframes scale-in {

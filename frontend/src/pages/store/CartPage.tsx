@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { formatCurrency } from '@/lib/formatters';
 
 export function CartPage() {
   const { items, updateQuantity, removeItem, totalPrice, totalItems } = useCart();
 
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-7xl px-4 py-20 text-center">
+      <div className="mx-auto max-w-[1280px] py-20 text-center">
         <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-muted mb-6">
           <ShoppingBag size={36} className="text-muted-foreground" />
         </div>
@@ -21,7 +22,7 @@ export function CartPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-8">
+    <div className="mx-auto max-w-[1280px] py-8">
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Carrinho de Compras</h1>
@@ -59,7 +60,7 @@ export function CartPage() {
                     </button>
                   </div>
                   <span className="text-sm text-muted-foreground mt-0.5">
-                    R$ {item.price.toFixed(2)} cada
+                    {formatCurrency(item.price)} cada
                   </span>
                   <div className="mt-auto flex items-center justify-between pt-3">
                     <div className="flex items-center rounded-lg border bg-muted/50 overflow-hidden">
@@ -78,7 +79,7 @@ export function CartPage() {
                         <Plus size={14} />
                       </button>
                     </div>
-                    <span className="text-base font-bold">R$ {(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="text-base font-bold">{formatCurrency(item.price * item.quantity)}</span>
                   </div>
                 </div>
               </div>
@@ -92,7 +93,7 @@ export function CartPage() {
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">R$ {totalPrice.toFixed(2)}</span>
+                <span className="font-medium">{formatCurrency(totalPrice)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Frete</span>
@@ -101,7 +102,7 @@ export function CartPage() {
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
-                  <span className="text-primary">R$ {totalPrice.toFixed(2)}</span>
+                  <span className="text-primary">{formatCurrency(totalPrice)}</span>
                 </div>
               </div>
             </div>

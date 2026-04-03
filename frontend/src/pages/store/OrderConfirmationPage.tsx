@@ -36,7 +36,7 @@ export function OrderConfirmationPage() {
   // No order state (e.g. page refresh) — show simplified confirmation
   if (!order) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+      <div className="mx-auto max-w-2xl py-16 text-center">
         {orderNumber ? (
           <>
             <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-success/10 mb-5">
@@ -65,7 +65,7 @@ export function OrderConfirmationPage() {
   const whatsappUrl = store?.whatsapp_number ? buildWhatsAppUrl(store.whatsapp_number, order) : null;
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-12">
+    <div className="mx-auto max-w-2xl py-12">
       {/* Success header */}
       <div className="text-center mb-10 animate-scale-in">
         <div className="inline-flex items-center justify-center h-20 w-20 rounded-full bg-success/10 mb-5">

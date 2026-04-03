@@ -7,7 +7,7 @@ export function PrivacyPolicyPage() {
   const storeName = store?.name || 'Nossa Loja';
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl py-8">
       <Link to="/" className="btn btn-ghost btn-sm gap-1 mb-6">
         <ArrowLeft size={16} /> Voltar
       </Link>
