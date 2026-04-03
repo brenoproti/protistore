@@ -48,7 +48,7 @@ function orderConfirmationHtml(order: Order, storeName: string): string {
   const deliveryLabel = order.delivery_method === "pickup" ? "Retirada na Loja" : "Entrega";
   const addressBlock =
     order.delivery_method === "delivery"
-      ? `<p style="margin:4px 0;color:#64748b;">${order.shipping_address}<br/>${order.shipping_city}, ${order.shipping_state} ${order.shipping_zip}</p>`
+      ? `<p style="margin:4px 0;color:#64748b;">${order.shipping_address}<br/>${order.shipping_neighborhood ? order.shipping_neighborhood + ' — ' : ''}${order.shipping_city}, ${order.shipping_state} ${order.shipping_zip}</p>`
       : "";
 
   return `

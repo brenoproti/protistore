@@ -88,7 +88,7 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
 
     // Delivery requires shipping fields
     if (deliveryMethod === "delivery") {
-      if (!req.shipping_address || !req.shipping_city || !req.shipping_state || !req.shipping_zip) {
+      if (!req.shipping_address || !req.shipping_neighborhood || !req.shipping_city || !req.shipping_state || !req.shipping_zip) {
         set.status = 400;
         return { code: "VALIDATION_ERROR", message: "Shipping address is required for delivery" };
       }
@@ -147,6 +147,7 @@ export const publicOrderRoutes = new Elysia({ prefix: "/api/v1" })
           customer_email: req.customer_email,
           customer_phone: req.customer_phone ?? null,
           shipping_address: req.shipping_address || "",
+          shipping_neighborhood: req.shipping_neighborhood || "",
           shipping_city: req.shipping_city || "",
           shipping_state: req.shipping_state || "",
           shipping_zip: req.shipping_zip || "",

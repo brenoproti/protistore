@@ -15,6 +15,7 @@ const checkoutSchema = z.object({
   customer_phone: z.string().optional(),
   delivery_method: z.enum(['pickup', 'delivery']),
   shipping_address: z.string().optional(),
+  shipping_neighborhood: z.string().optional(),
   shipping_city: z.string().optional(),
   shipping_state: z.string().optional(),
   shipping_zip: z.string().optional(),
@@ -28,6 +29,9 @@ const checkoutSchema = z.object({
   if (data.delivery_method === 'delivery') {
     if (!data.shipping_address || data.shipping_address.length < 5) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Endereço é obrigatório', path: ['shipping_address'] });
+    }
+    if (!data.shipping_neighborhood || data.shipping_neighborhood.length < 2) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Bairro é obrigatório', path: ['shipping_neighborhood'] });
     }
     if (!data.shipping_city || data.shipping_city.length < 2) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Cidade é obrigatória', path: ['shipping_city'] });
@@ -99,6 +103,7 @@ export function CheckoutPage() {
         customer_phone: data.customer_phone || undefined,
         delivery_method: data.delivery_method,
         shipping_address: isPickup ? '' : data.shipping_address,
+        shipping_neighborhood: isPickup ? '' : data.shipping_neighborhood,
         shipping_city: isPickup ? '' : data.shipping_city,
         shipping_state: isPickup ? '' : data.shipping_state,
         shipping_zip: isPickup ? '' : data.shipping_zip,
@@ -209,6 +214,11 @@ export function CheckoutPage() {
                     <label className="mb-1 block text-sm font-medium">Endereço *</label>
                     <input {...register('shipping_address')} className="input" placeholder="Rua Principal, 123, Apto 4" />
                     {errors.shipping_address && <p className="mt-1 text-xs text-destructive">{errors.shipping_address.message}</p>}
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Bairro *</label>
+                    <input {...register('shipping_neighborhood')} className="input" placeholder="Centro" />
+                    {errors.shipping_neighborhood && <p className="mt-1 text-xs text-destructive">{errors.shipping_neighborhood.message}</p>}
                   </div>
                   <div>
                     <label className="mb-1 block text-sm font-medium">Cidade *</label>

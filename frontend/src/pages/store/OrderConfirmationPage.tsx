@@ -17,7 +17,7 @@ function buildWhatsAppUrl(phone: string, order: Order): string {
     `*Nome:* ${order.customer_name}`,
     items ? `\n*Itens:*\n${items}` : '',
     `\n*Total:* ${formatCurrency(order.total)}`,
-    order.delivery_method === 'pickup' ? `*Entrega:* Retirada na loja` : `*Entrega:* ${order.shipping_address}, ${order.shipping_city} - ${order.shipping_state}`,
+    order.delivery_method === 'pickup' ? `*Entrega:* Retirada na loja` : `*Entrega:* ${order.shipping_address}, ${order.shipping_neighborhood ? order.shipping_neighborhood + ', ' : ''}${order.shipping_city} - ${order.shipping_state}`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -159,6 +159,7 @@ export function OrderConfirmationPage() {
           <div className="mt-2 text-sm text-muted-foreground leading-relaxed">
             <p>{order.customer_name}</p>
             <p>{order.shipping_address}</p>
+            {order.shipping_neighborhood && <p>{order.shipping_neighborhood}</p>}
             <p>{order.shipping_city}, {order.shipping_state} {order.shipping_zip}</p>
           </div>
         )}

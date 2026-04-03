@@ -102,6 +102,7 @@ export interface Order {
   customer_email: string;
   customer_phone: string | null;
   shipping_address: string;
+  shipping_neighborhood: string;
   shipping_city: string;
   shipping_state: string;
   shipping_zip: string;

@@ -313,6 +313,7 @@ export function OrderDetailPage() {
                   <dt className="text-muted-foreground">Endereço</dt>
                   <dd className="font-medium">
                     {order.shipping_address}<br />
+                    {order.shipping_neighborhood && <>{order.shipping_neighborhood}<br /></>}
                     {order.shipping_city}, {order.shipping_state} {order.shipping_zip}
                   </dd>
                 </div>

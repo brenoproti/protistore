@@ -9,13 +9,13 @@ export async function createOrder(order: Partial<Order>, items: { product_id: nu
 
     const [result] = await conn.query<ResultSetHeader>(
       `INSERT INTO orders (store_id, order_number, status, customer_name, customer_email, customer_phone,
-       shipping_address, shipping_city, shipping_state, shipping_zip,
+       shipping_address, shipping_neighborhood, shipping_city, shipping_state, shipping_zip,
        subtotal, shipping_cost, discount, total, notes, delivery_method, payment_method, change_for)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         order.store_id, order.order_number, order.status || "pending",
         order.customer_name, order.customer_email, order.customer_phone ?? null,
-        order.shipping_address, order.shipping_city, order.shipping_state, order.shipping_zip,
+        order.shipping_address, order.shipping_neighborhood ?? "", order.shipping_city, order.shipping_state, order.shipping_zip,
         order.subtotal, order.shipping_cost ?? 0, order.discount ?? 0, order.total,
         order.notes ?? null, order.delivery_method ?? "delivery", order.payment_method ?? "pix",
         order.change_for ?? null,

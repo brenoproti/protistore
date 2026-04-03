@@ -193,6 +193,7 @@ export interface OrderConfirmationDTO {
   customer_name: string;
   customer_email: string;
   shipping_address: string;
+  shipping_neighborhood: string;
   shipping_city: string;
   shipping_state: string;
   shipping_zip: string;
@@ -215,6 +216,7 @@ export function toOrderConfirmation(o: Order): OrderConfirmationDTO {
     customer_name: o.customer_name,
     customer_email: o.customer_email,
     shipping_address: o.shipping_address,
+    shipping_neighborhood: o.shipping_neighborhood,
     shipping_city: o.shipping_city,
     shipping_state: o.shipping_state,
     shipping_zip: o.shipping_zip,

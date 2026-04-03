@@ -135,6 +135,7 @@ CREATE TABLE IF NOT EXISTS orders (
     customer_email VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(50),
     shipping_address TEXT NOT NULL,
+    shipping_neighborhood VARCHAR(100) NOT NULL DEFAULT '',
     shipping_city VARCHAR(100) NOT NULL,
     shipping_state VARCHAR(100) NOT NULL,
     shipping_zip VARCHAR(20) NOT NULL,
