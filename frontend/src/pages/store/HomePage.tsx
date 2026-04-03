@@ -1,118 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import useEmblaCarousel from 'embla-carousel-react';
-import Autoplay from 'embla-carousel-autoplay';
-import { ChevronRight, ArrowRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { storeApi } from '@/lib/api';
 import type { Banner, Brand, Category, Product } from '@/types';
 import { ProductCard } from '@/components/store/ProductCard';
-
-// ---------------------------------------------------------------------------
-// Banner Carousel
-// ---------------------------------------------------------------------------
-
-function BannerCarousel({ banners }: { banners: Banner[] }) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
-    Autoplay({ delay: 5000, stopOnInteraction: false }),
-  ]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on('select', onSelect);
-    onSelect();
-    return () => {
-      emblaApi.off('select', onSelect);
-    };
-  }, [emblaApi, onSelect]);
-
-  const scrollTo = useCallback(
-    (index: number) => emblaApi?.scrollTo(index),
-    [emblaApi],
-  );
-
-  if (banners.length === 0) return null;
-
-  return (
-    <div className="relative w-full overflow-hidden rounded-2xl">
-      <div ref={emblaRef} className="overflow-hidden rounded-2xl">
-        <div className="flex">
-          {banners.map((banner) => {
-            const Wrapper = banner.link_url ? Link : 'div';
-            const wrapperProps = banner.link_url
-              ? { to: banner.link_url }
-              : {};
-
-            return (
-              <div
-                key={banner.id}
-                className="relative min-w-0 flex-[0_0_100%]"
-              >
-                {/* @ts-expect-error dynamic element */}
-                <Wrapper {...wrapperProps} className="block">
-                  <div className="relative aspect-[5/2] sm:aspect-[7/2] max-h-[380px] w-full overflow-hidden bg-muted">
-                    <img
-                      src={banner.image_url}
-                      alt={banner.title}
-                      width={1400}
-                      height={400}
-                      className="h-full w-full object-cover"
-                    />
-                    {(banner.title || banner.subtitle) && (
-                      <div className="absolute inset-0 flex items-end sm:items-center bg-gradient-to-r from-black/60 via-black/30 to-transparent">
-                        <div className="max-w-2xl px-6 pb-10 sm:pb-0 sm:px-12 lg:px-16">
-                          {banner.title && (
-                            <h2 className="text-lg sm:text-2xl lg:text-4xl font-bold text-white mb-1.5 sm:mb-3 drop-shadow-lg leading-tight">
-                              {banner.title}
-                            </h2>
-                          )}
-                          {banner.subtitle && (
-                            <p className="text-xs sm:text-base text-white/90 max-w-md leading-relaxed drop-shadow">
-                              {banner.subtitle}
-                            </p>
-                          )}
-                          {banner.link_url && (
-                            <span className="inline-flex items-center gap-1.5 mt-3 sm:mt-4 text-xs sm:text-sm font-medium text-white bg-white/20 backdrop-blur-sm px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full hover:bg-white/30 transition-colors">
-                              Explorar <ArrowRight size={14} />
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </Wrapper>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Navigation dots */}
-      {banners.length > 1 && (
-        <div className="absolute bottom-3 sm:bottom-5 left-1/2 -translate-x-1/2 flex gap-2 bg-black/20 backdrop-blur-sm rounded-full px-3 py-1.5">
-          {banners.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className={`rounded-full transition-all duration-300 ${
-                index === selectedIndex
-                  ? 'w-6 h-2 bg-white'
-                  : 'w-2 h-2 bg-white/50 hover:bg-white/75'
-              }`}
-              aria-label={`Ir para slide ${index + 1}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // Section Header
@@ -135,8 +26,8 @@ function SectionHeader({ title, linkTo, linkText }: { title: string; linkTo: str
 
 function BannerSkeleton() {
   return (
-    <div className="px-4 sm:px-6 lg:px-8">
-      <div className="rounded-2xl overflow-hidden aspect-[5/2] sm:aspect-[7/2] max-h-[380px] skeleton" />
+    <div>
+      <div className="rounded-2xl overflow-hidden aspect-[3/1] skeleton" />
     </div>
   );
 }
@@ -223,15 +114,27 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col gap-10 sm:gap-12 pb-16">
-      {/* ---- Banner Carousel ---- */}
+      {/* ---- Banner ---- */}
       <section className="mx-auto w-full max-w-[1280px] pt-4 sm:pt-6">
-        <div>
-          {bannersLoading ? (
-            <div className="rounded-2xl overflow-hidden aspect-[5/2] sm:aspect-[7/2] max-h-[380px] skeleton" />
-          ) : banners && banners.length > 0 ? (
-            <BannerCarousel banners={banners} />
-          ) : null}
-        </div>
+        {bannersLoading ? (
+          <BannerSkeleton />
+        ) : banners && banners.length > 0 ? (
+          (() => {
+            const banner = banners[0];
+            const Wrapper = banner.link_url ? Link : 'div';
+            const wrapperProps = banner.link_url ? { to: banner.link_url } : {};
+            return (
+              // @ts-expect-error dynamic element
+              <Wrapper {...wrapperProps} className="block rounded-2xl overflow-hidden">
+                <img
+                  src={banner.image_url}
+                  alt={banner.title}
+                  className="w-full h-auto max-h-[480px] object-cover rounded-2xl"
+                />
+              </Wrapper>
+            );
+          })()
+        ) : null}
       </section>
 
       {/* ---- Featured / Recent Products ---- */}
