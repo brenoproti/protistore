@@ -22,7 +22,7 @@ const navItems = [
   { to: '/admin/products', icon: Package, label: 'Produtos', end: false },
   { to: '/admin/categories', icon: FolderTree, label: 'Categorias', end: false },
   { to: '/admin/brands', icon: Tag, label: 'Marcas', end: false },
-  { to: '/admin/banners', icon: Image, label: 'Banners', end: false },
+  { to: '/admin/banners', icon: Image, label: 'Banner', end: false },
   { to: '/admin/orders', icon: ShoppingCart, label: 'Pedidos', end: false },
   { to: '/admin/settings', icon: Settings, label: 'Configurações', end: false },
   { to: '/admin/customization', icon: Palette, label: 'Personalização', end: false },
