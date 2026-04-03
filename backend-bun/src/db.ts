@@ -51,8 +51,18 @@ export async function runMigrations(): Promise<void> {
   try {
     for (const file of files) {
       const sql = await readFile(join(migrationsDir, file), "utf-8");
-      await migrationPool.query(sql);
-      logger.info(`Migration applied: ${file}`);
+      try {
+        await migrationPool.query(sql);
+        logger.info(`Migration applied: ${file}`);
+      } catch (err: unknown) {
+        const code = (err as { errno?: number }).errno;
+        // 1060 = Duplicate column name — safe to ignore for idempotent migrations
+        if (code === 1060) {
+          logger.info(`Migration skipped (already applied): ${file}`);
+        } else {
+          throw err;
+        }
+      }
     }
   } finally {
     await migrationPool.end();
